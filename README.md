@@ -132,7 +132,7 @@ Inside lib are several folders that all contain the vast majority of frontend co
 | Name       | Role          
 | ------------- |:-------------:
 | Minhat Mustafa | Backend, Manager     |
-| Kiran Nazarali | Backend              |
+| Kiran Nazarali | Backend              | 
 | Nabeeha Nuba | Frontend, Communicator |
 | Hira Shahzad | Backend                |
 | Yoshiki Kakehi | Frontend, Backend    |
