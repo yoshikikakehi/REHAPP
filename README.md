@@ -1,4 +1,4 @@
-# Junior-Design-1324: Rehapp
+# Junior-Design-2324: Rehapp
 
 ## Installing
 
@@ -127,13 +127,8 @@ Inside lib are several folders that all contain the vast majority of frontend co
 - Account tab feature (currently the account tab leads to logout)
 - Embedded video player 
 
-# `Team 1324` Members
+# `Team Toast (2324)` Members
 
 | Name       | Role          
 | ------------- |:-------------:
-| Aditi Bhatia      | Front End  |
-| Andrew Xu     | Backend     |
-| Jessica Jacobs | Backend     |
-| Paula Punmaneeluk| Front End|
-| Rishabh Ranjan| Backend     |
-| Emma Dang | Backend |
+| Minhat Mustafa | Backend, Manager |
