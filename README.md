@@ -1,4 +1,4 @@
-# Junior-Design-2324: Rehapp
+# Junior-Design-2324: REHAPP
 
 ## Installing
 
@@ -10,11 +10,11 @@
 
 ### Project Installation
 
-1. Clone this project and name it accordingly: ``git clone https://github.com/jjacobs44/Junior-Design-1324.git``. If you are new to git, it isn't 100% necessary to install git in order to utilize the project. Simply download the project and unzip it wherever you want on your computer. ![image](https://user-images.githubusercontent.com/29733080/165175625-ae7ab14d-02c4-4aca-ab1f-e2a7b0a09933.png)
+1. Clone this project and name it accordingly: ``git clone https://github.com/jjacobs44/REHAPP.git``. If you are new to git, it isn't 100% necessary to install git in order to utilize the project. Simply download the project and unzip it wherever you want on your computer. ![image](https://user-images.githubusercontent.com/29733080/165175625-ae7ab14d-02c4-4aca-ab1f-e2a7b0a09933.png)
 2. Open the project with either Android Studio or Xcode, depending on which operating system you have. Windows users likely will open the project with Android Studio, and MacOS users will likely use Xcode.
 3. For Android Studio users, open the project. At the top there will be a bar. In the **target selector**, select an Android device for running the app. If none are listed as available, select Tools > AVD Manager and create one there. For details, see [Managing AVDs](https://developer.android.com/studio/run/managing-avds).
 Click the run icon in the toolbar, or invoke the menu item Run > Run. ![image](https://user-images.githubusercontent.com/29733080/165176384-eab8552c-4231-4486-ac08-1266469b6b0b.png) 
-4. For Xcode users, on your Mac, find the Simulator via Spotlight. You can also open "Terminal", a command line program, and enter this command: ``open -a Simulator``. With Terminal still open, you must navigate to the location of the project folder on your Mac. If you are unfamiliar with Terminal commands, see this [guide](https://computers.tutsplus.com/tutorials/navigating-the-terminal-a-gentle-introduction--mac-3855). The general gist is that entering the command ``ls`` shows you the current folders. ``cd <folder-name>`` allows you to enter a folder. ``cd ..`` allows you exit the folder you are currently in. You should aim to enter the folder "Junior-Design-1324" and again to enter the folder "rehapp". Make sure the Simulator is running, and enter ``flutter run`` in Terminal.
+4. For Xcode users, on your Mac, find the Simulator via Spotlight. You can also open "Terminal", a command line program, and enter this command: ``open -a Simulator``. With Terminal still open, you must navigate to the location of the project folder on your Mac. If you are unfamiliar with Terminal commands, see this [guide](https://computers.tutsplus.com/tutorials/navigating-the-terminal-a-gentle-introduction--mac-3855). The general gist is that entering the command ``ls`` shows you the current folders. ``cd <folder-name>`` allows you to enter a folder. ``cd ..`` allows you exit the folder you are currently in. You should aim to enter the folder "REHAPP" and again to enter the folder "rehapp". Make sure the Simulator is running, and enter ``flutter run`` in Terminal.
 5. Congratulations! The project should be running and you will be able to interact with the application.
 
 ### Building the Application for Mobile
@@ -32,7 +32,7 @@ The folder `rehapp` features the important frontend pieces of the app. Here the 
 
 #### ``android and ios``
 
-These folders contain platform specific details. Team 1324 did not greatly alter these folders, so they should generally be the same as when you create a new Flutter template project.
+These folders contain platform specific details. Team 2324 did not greatly alter these folders, so they should generally be the same as when you create a new Flutter template project.
 
 #### ``fonts``
 
@@ -40,7 +40,7 @@ This folder contains the font we chose for Rehapp: Atkinson Hyperlegible. This f
 
 #### ``test and web``
 
-These folders are generally unused by Team 1324.
+These folders are generally unused by Team 2324.
 
 #### ``lib``
 
@@ -135,3 +135,4 @@ Inside lib are several folders that all contain the vast majority of frontend co
 | Kiran Nazarali | Backend              |
 | Nabeeha Nuba | Frontend, Communicator |
 | Hira Shahzad | Backend                |
+| Yoshiki Kakehi | Frontend, Backend    |
