@@ -15,6 +15,8 @@ import '../ProgressHUD.dart';
 import '../api/token.dart' as token;
 import '../api/user.dart' as user;
 
+bool checked = false;
+
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -245,6 +247,27 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
+                Container(
+                  color: Colors.white,
+                  alignment: Alignment.center,
+                  //padding: const EdgeInsets.only(left: 370),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 0, horizontal: 215),
+                  child: Material(
+                    child: CheckboxListTile(
+                      tileColor: Colors.white,
+                      title: const Text('Remember me'),
+                      controlAffinity: ListTileControlAffinity.platform,
+                      selected: false,
+                      value: checked,
+                      onChanged:(bool? value) {
+                        setState(() {
+                          checked = value!;
+                        });
+                      },
+                    ),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 10.0),
                   child: InkWell(
@@ -265,6 +288,7 @@ class _LoginPageState extends State<LoginPage> {
                           ],
                         ),
                       )),
+
                 ),
               ]),
             ),
