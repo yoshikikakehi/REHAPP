@@ -75,46 +75,54 @@ Inside lib are several folders that all contain the vast majority of frontend co
 * [Flutter Youtube Channel](https://www.youtube.com/c/flutterdev)
 
 # Release Notes
-## New software features (Version 1.0)
+## New software features (Version 0.1.1)
 
-1. **General Features**
-    * Create an account as either a therapist or patient
-    * Login with created credentials
-    * Log out
+### General Features
+* Click a "Remember Me" checkbox during login
+    
+### Known Issues
+* Currently, the previous Azure database service is expired. By Sprint 2, a new database should be configured.
+    
+## New software features (Version 0.1.0)
 
-2. **Patient Features**
-    * View incomplete assigned exercises
-        - Includes name, description, expected time to complete, optional photo, and optional video
-        - Submit feedback to therapist including: minutes spent on exercise, difficulty level (ie: easy, moderate, hard), and optional comments
-        - Voice dictation to leave optional comments instead of typing with keyboard
-    * View completed assigned exercises
-        - View old response to the exercises
-        - Submit new response to therapist on already completed exercises
+### General Features
+* Create an account as either a therapist or patient
+* Login with created credentials
+* Log out
 
-3. **Therapist Features**
-    * Add a patients to roster 
-    * Remove a patient from roster
-    * Search for a patient by name
-    * View specific patient’s incomplete assigned exercises
-    * View specific patient’s complete assigned exercises
-        - Shows patient's feedback
-    * Search for a patient’s assigned exercise by name
-    * Remove a patient’s assigned exercise
-    * Assign patient a new exercise
-        - Custom exercise
-            + Enter name, description, expected time to complete, days assigned to complete (ie: mondays and wednesdays), optional image, and optional video      demonstration
-        - Exercise bank
-            + Select from a list of common exercises
-            + Name, description, expected time, image and video are autofilled
-            + Enter days assigned to complete (ie: tuesdays and thursdays)
-            + Optionally edit the autofilled information to better fit the patient’s needs
+### Patient Features
+* View incomplete assigned exercises
+  - Includes name, description, expected time to complete, optional photo, and optional video
+  - Submit feedback to therapist including: minutes spent on exercise, difficulty level (ie: easy, moderate, hard), and optional comments
+  - Voice dictation to leave optional comments instead of typing with keyboard
+* View completed assigned exercises
+  - View old response to the exercises
+  - Submit new response to therapist on already completed exercises
 
-## Bug fixes (Version 1.0)
+### Therapist Features
+* Add a patients to roster 
+* Remove a patient from roster
+* Search for a patient by name
+* View specific patient’s incomplete assigned exercises
+* View specific patient’s complete assigned exercises
+  - Shows patient's feedback
+* Search for a patient’s assigned exercise by name
+* Remove a patient’s assigned exercise
+* Assign patient a new exercise
+  - Custom exercise
+      + Enter name, description, expected time to complete, days assigned to complete (ie: mondays and wednesdays), optional image, and optional video      demonstration
+  - Exercise bank
+      + Select from a list of common exercises
+      + Name, description, expected time, image and video are autofilled
+      + Enter days assigned to complete (ie: tuesdays and thursdays)
+      + Optionally edit the autofilled information to better fit the patient’s needs
+
+### Bug fixes (Version 0.1.0)
 **Fixed Bugs**
 - Null Video Link in the getPatientAssignments and getAssignedExercises APIs
 - Broken Picture Link in the database
 
-## Known bugs and defects (Version 1.0)
+### Known bugs and defects (Version 0.1.0)
 **Known Bugs**
 - The status bar changes to white and stays white after the assign exercise page, making it difficult to read on other pages (it may change back)
 
