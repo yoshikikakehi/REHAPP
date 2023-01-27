@@ -1,5 +1,7 @@
 # Junior-Design-2324: REHAPP
 
+REHAPP is a rehabilitation app for stroke survivors. This app allows therapists to assign home exercise programs to their patients and view their progress. The patients can then see their assigned exercises and log their progress in the app. 
+
 ## Installing
 
 ### Prerequisites
