@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "786221558289",
+    "project_id": "rehapp-dc805",
+    "storage_bucket": "rehapp-dc805.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:786221558289:android:25eb545ca3852b25c51fb0",
+        "android_client_info": {
+          "package_name": "com.example.rehapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "786221558289-phj8g3undordmm26k6bbg7hb7uml8rv4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYqxp6OOUaNk9ewdzZ9X3DbucQrapdNDI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "786221558289-phj8g3undordmm26k6bbg7hb7uml8rv4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

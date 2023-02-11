@@ -1,4 +1,6 @@
 import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rehapp/model/add_patient_model.dart';
 import 'package:rehapp/model/assign_exercise_model.dart';
 import 'package:rehapp/model/delete_exercise_model.dart';
@@ -15,36 +17,47 @@ import 'package:rehapp/model/verify_model.dart';
 import 'package:rehapp/model/get_patient_model.dart';
 
 class APIService {
-  Future<LoginResponseModel> login(LoginRequestModel requestModel) async {
-    String url = "https://rehapp.azurewebsites.net/authenticate/login";
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(requestModel),
-    );
-    if (response.statusCode == 200) {
-      print(response.body);
-      return LoginResponseModel.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to load Data');
+  Future<UserCredential> login(LoginRequestModel requestModel) async {
+    try {
+      FirebaseAuth auth = FirebaseAuth.instance;
+      jsonEncode(requestModel);
+      final UserCredential userCredential = await auth.signInWithEmailAndPassword(
+        email: requestModel.email.trim(),
+        password: requestModel.password.trim()
+      );
+
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        throw Exception('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        throw Exception('Wrong password provided for that user.');
+      }
+      throw e;
     }
   }
 
-  Future<SignupResponseModel> signup(SignupRequestModel requestModel) async {
-    String url = "https://rehapp.azurewebsites.net/authenticate/register";
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(requestModel),
-    );
-    print(jsonEncode(requestModel));
-    if (response.statusCode == 200 || response.statusCode == 400) {
-      if (response.body.isEmpty) {
-        return SignupResponseModel.fromEmpty();
+  Future<UserCredential> signup(SignupRequestModel requestModel) async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: requestModel.email.trim(),
+        password: requestModel.password.trim()
+      );
+      FirebaseFirestore.instance
+        .collection("users")
+        .doc(userCredential.user?.uid)
+        .set(requestModel.toJson())
+        .onError((e, _) => print("User already exists: $e"));
+
+      await userCredential.user?.sendEmailVerification();
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        throw Exception('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        throw Exception('The account already exists for that email.');
       }
-      return SignupResponseModel.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to load Data');
+      throw e;
     }
   }
 

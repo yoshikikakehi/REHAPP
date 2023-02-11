@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/user.dart' as user;
 
@@ -15,6 +16,7 @@ class LogoutPage extends StatelessWidget {
           alignment: Alignment.center,
           child: ElevatedButton(
             onPressed: () async {
+              await FirebaseAuth.instance.signOut();
               user.firstname = "";
               user.lastname = "";
               user.role = "";

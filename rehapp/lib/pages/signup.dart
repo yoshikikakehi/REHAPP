@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rehapp/assets/constants.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/signup_model.dart';
@@ -227,7 +229,6 @@ class _SignupPageState extends State<SignupPage> {
                         setState(() {
                           isApiCallProcess = false;
                         });
-                        print('is this correct?');
                         const snackBar = SnackBar(
                           content: Text(EMAIL_SUCCESS_SNACKBAR),
                         );

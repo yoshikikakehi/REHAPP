@@ -39,7 +39,6 @@ class SignupRequestModel {
       'firstname': firstname.trim(),
       'lastname': lastname.trim(),
       'email': email.trim(),
-      'password': sha256.convert(utf8.encode(password)).toString(),
       'role': role.trim(),
     };
 
