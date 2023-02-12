@@ -20,7 +20,6 @@ class APIService {
   Future<UserCredential> login(LoginRequestModel requestModel) async {
     try {
       FirebaseAuth auth = FirebaseAuth.instance;
-      jsonEncode(requestModel);
       final UserCredential userCredential = await auth.signInWithEmailAndPassword(
         email: requestModel.email.trim(),
         password: requestModel.password.trim()
@@ -39,17 +38,20 @@ class APIService {
 
   Future<UserCredential> signup(SignupRequestModel requestModel) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      FirebaseAuth auth = FirebaseAuth.instance;
+      FirebaseFirestore db = FirebaseFirestore.instance
+
+      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: requestModel.email.trim(),
         password: requestModel.password.trim()
       );
-      FirebaseFirestore.instance
-        .collection("users")
+      
+      db.collection("users")
         .doc(userCredential.user?.uid)
         .set(requestModel.toJson())
         .onError((e, _) => print("User already exists: $e"));
 
-      await userCredential.user?.sendEmailVerification();
+      // await userCredential.user?.sendEmailVerification();
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {

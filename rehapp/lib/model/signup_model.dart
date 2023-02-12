@@ -38,7 +38,6 @@ class SignupRequestModel {
     Map<String, dynamic> map = {
       'firstname': firstname.trim(),
       'lastname': lastname.trim(),
-      'email': email.trim(),
       'role': role.trim(),
     };
 
