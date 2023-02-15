@@ -11,11 +11,11 @@ import '../api/token.dart' as token;
 import '../api/user.dart' as user;
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool status = prefs.getBool('isLoggedIn') ?? false;
   if (status) {
