@@ -39,7 +39,7 @@ class APIService {
   Future<UserCredential> signup(SignupRequestModel requestModel) async {
     try {
       FirebaseAuth auth = FirebaseAuth.instance;
-      FirebaseFirestore db = FirebaseFirestore.instance
+      FirebaseFirestore db = FirebaseFirestore.instance;
 
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: requestModel.email.trim(),

@@ -198,13 +198,12 @@ class _LoginPageState extends State<LoginPage> {
                                 user.firstname = data?["firstname"];
                                 user.lastname = data["lastname"];
                                 user.role = data["role"];
-                                user.email = FirebaseAuth.instance.currentUser.email;
+                                user.email = FirebaseAuth.instance.currentUser?.email;
                                 SharedPreferences prefs = await SharedPreferences.getInstance();
                                 prefs.setBool("isLoggedIn", true);
                                 prefs.setString("firstname", data["firstname"]);
                                 prefs.setString("lastname", data["lastname"]);
                                 prefs.setString("role", data["role"]);
-                                prefs.setString("email", FirebaseAuth.instance.currentUser.email);
                                 const snackBar = SnackBar(
                                   content: Text(LOGIN_SUCCESS_SNACKBAR),
                                 );
