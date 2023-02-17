@@ -61,6 +61,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                 displayedPatients.addAll(value);
               });
             }
+          }).then((value) {
             isApiCallProcess = false;
           }).catchError((error) {
             const snackBar = SnackBar(
@@ -147,6 +148,10 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                     setState(() {
                       patients.add(patient);
                       displayedPatients.add(patient);
+                      user.update("patients", (value) {
+                        value.add(patient["id"]);
+                        return value;
+                      });
                       Navigator.pop(context);
                       _textFieldController.clear();
                     });
@@ -248,6 +253,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                       Expanded(
                         child: RefreshIndicator(
                           onRefresh: () async {
+                            isApiCallProcess = true;
                             APIService apiService = APIService();
                             await apiService.getPatients(user["patients"]).then((value) {
                               setState(() {
@@ -256,8 +262,11 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                 patients.addAll(value);
                                 displayedPatients.addAll(value);
                               });
+                            }).then((value) {
                               isApiCallProcess = false;
                             }).catchError((error) {
+                              isApiCallProcess = false;
+                              print(error);
                               const snackBar = SnackBar(
                                 content: Text("Retrieving patients failed"),
                               );
@@ -265,7 +274,16 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                   .showSnackBar(snackBar);
                             });
                           },
-                          child: ListView.builder(
+                          child: user["patients"].length == 0 ? Container(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "No patients have been added yet",
+                              style: TextStyle(
+                                color: const Color(0x88888888).withOpacity(0.7),
+                                fontSize: 16.0
+                              )
+                            ),
+                          ) : ListView.builder(
                               physics: const BouncingScrollPhysics(
                                   parent: AlwaysScrollableScrollPhysics()),
                               controller: _controller,
@@ -289,23 +307,29 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                       ),
                                       onDismissed: (direction) {
                                         APIService apiService = APIService();
-                                        apiService
-                                            .deletePatient(
-                                                DeletePatientRequestModel(patientEmail: displayedPatients.elementAt(index)["email"]))
-                                            .then((value) {
-                                          setState(() {
-                                            displayedPatients.removeAt(index);
-                                            patients.removeAt(index);
+                                        isApiCallProcess = true;
+                                        apiService.deletePatient(user["patients"].elementAt(index))
+                                          .then((value) {
+                                            setState(() {
+                                              displayedPatients.removeAt(index);
+                                              patients.removeAt(index);
+                                              user.update("patients", (value) {
+                                                value.removeAt(index);
+                                                return value;
+                                              });
+                                            });
+                                          }).then((value) {
+                                            isApiCallProcess = false;
+                                          }).catchError((error) {
+                                            isApiCallProcess = false;
+                                            print(error);
+                                            const snackBar = SnackBar(
+                                              content:
+                                                  Text("Deleting patient failed"),
+                                            );
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(snackBar);
                                           });
-                                        }).catchError((error) {
-                                          print(error);
-                                          const snackBar = SnackBar(
-                                            content:
-                                                Text("Deleting patient failed"),
-                                          );
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(snackBar);
-                                        });
                                       },
                                       confirmDismiss: (direction) async {
                                         return await showDialog(
@@ -349,7 +373,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                           },
                                           child: ListTile(
                                             title: Text(displayedPatients.elementAt(index)["firstname"] + " " + displayedPatients.elementAt(index)["lastname"]),
-                                            subtitle: Text(displayedPatients.elementAt(index)["email"]), //will have to fix this later since subtitles list will shift while searching
+                                            subtitle: Text(displayedPatients.elementAt(index)["email"]),
                                             leading: const Icon(
                                                 Icons.account_circle_outlined,
                                                 color: Colors.black),

@@ -23,7 +23,7 @@ class APIService {
   Future<UserCredential> login(LoginRequestModel requestModel) async {
     try {
       final UserCredential userCredential = await auth.signInWithEmailAndPassword(
-        email: requestModel.email.trim(),
+        email: requestModel.email.toLowerCase().trim(),
         password: requestModel.password.trim()
       );
 
@@ -41,7 +41,7 @@ class APIService {
   Future<UserCredential> signup(SignupRequestModel requestModel) async {
     try {
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-        email: requestModel.email.trim(),
+        email: requestModel.email.toLowerCase().trim(),
         password: requestModel.password.trim()
       );
       
@@ -109,6 +109,7 @@ class APIService {
         .then((DocumentSnapshot doc) {
           final data = doc.data() as Map<String, dynamic>;
           patients[i] = {
+            'id': patientIds[i],
             'firstname': data['firstname'],
             'lastname': data['lastname'],
             'email': data['email'],
@@ -125,13 +126,13 @@ class APIService {
       String patientEmail) async {
     Map<String, dynamic> patient = {};
     await db.collection('users')
-      .where('email', isEqualTo: patientEmail.trim())
+      .where('email', isEqualTo: patientEmail.toLowerCase().trim())
       .get()
       .then((QuerySnapshot query) async {
         if (query.size == 0 ) {
           throw Exception("Data was not found");
         } else if (query.size > 1) {
-          throw Exception('Found more than one user with email: ' + patientEmail.trim());
+          throw Exception('Found more than one user with email: ' + patientEmail.toLowerCase().trim());
         }
         final doc = query.docs.elementAt(0);
         db.collection('users')
@@ -139,6 +140,7 @@ class APIService {
           .update({"patients": FieldValue.arrayUnion([doc.id])});
         final data = doc.data() as Map<String, dynamic>;
         patient = {
+          'id': doc.id,
           'firstname': data['firstname'],
           'lastname': data['lastname'],
           'email': data['email'],
@@ -150,6 +152,16 @@ class APIService {
       return patient;
   }
 
+  Future<void> deletePatient(
+      String patientId) async {
+    await db.collection('users')
+      .doc(auth.currentUser?.uid)
+      .update({"patients": FieldValue.arrayRemove([patientId])})
+      .onError((e, _) => throw Exception("Patient with with id: $patientId could not be deleted: $e"));
+  }
+
+// ALL OLD API SERVICES BELOW:
+// TODO: Refactor all below API services to utilize Firebase
   Future<GetExerciseResponseModel> getExercises(String patientEmail) async {
     String url =
         "https://rehapp.azurewebsites.net/therapist/getPatientAssignments?PatientEmail=${patientEmail}";
@@ -237,24 +249,6 @@ class APIService {
     );
     if (response.statusCode == 200) {
       return ExerciseFeedbackResponseModel.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to load Data');
-    }
-  }
-
-  Future<DeletePatientResponseModel> deletePatient(
-      DeletePatientRequestModel requestModel) async {
-    String url = "https://rehapp.azurewebsites.net/therapist/deletePatient";
-    final response = await http.delete(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${token.value}",
-      },
-      body: jsonEncode(requestModel),
-    );
-    if (response.statusCode == 200) {
-      return DeletePatientResponseModel.fromJson(json.decode(response.body));
     } else {
       throw Exception('Failed to load Data');
     }
