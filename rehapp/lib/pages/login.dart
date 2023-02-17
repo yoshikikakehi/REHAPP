@@ -40,19 +40,23 @@ class _LoginPageState extends State<LoginPage> {
 
   void transferLogin() async {
     if (FirebaseAuth.instance.currentUser != null) {
-      if (user.role == "therapist") {
-        Future.delayed(Duration.zero, () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const TherapistHomePage()));
+      APIService apiService = APIService();
+      apiService.getCurrentUserData()
+        .then((userValue) {
+          if (userValue["role"] == "therapist") {
+            Future.delayed(Duration.zero, () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const TherapistHomePage()));
+            });
+          } else {
+            Future.delayed(Duration.zero, () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => HomePage()));
+            });
+          }
         });
-      } else {
-        Future.delayed(Duration.zero, () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => HomePage()));
-        });
-      }
     }
   }
 
@@ -198,12 +202,7 @@ class _LoginPageState extends State<LoginPage> {
                                 user.firstname = data?["firstname"];
                                 user.lastname = data["lastname"];
                                 user.role = data["role"];
-                                user.email = FirebaseAuth.instance.currentUser?.email;
-                                SharedPreferences prefs = await SharedPreferences.getInstance();
-                                prefs.setBool("isLoggedIn", true);
-                                prefs.setString("firstname", data["firstname"]);
-                                prefs.setString("lastname", data["lastname"]);
-                                prefs.setString("role", data["role"]);
+                                user.email = data["email"];
                                 const snackBar = SnackBar(
                                   content: Text(LOGIN_SUCCESS_SNACKBAR),
                                 );
@@ -249,10 +248,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 Container(
                   color: Colors.white,
+                  constraints: BoxConstraints(minWidth: 100, maxWidth: 200),
+                  margin: const EdgeInsets.only(left: 20.0, right: 20.0),
                   alignment: Alignment.center,
-                  //padding: const EdgeInsets.only(left: 370),
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 0, horizontal: 215),
                   child: Material(
                     child: CheckboxListTile(
                       tileColor: Colors.white,

@@ -14,25 +14,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   WidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool status = prefs.getBool('isLoggedIn') ?? false;
-  if (status) {
-    double time = (DateTime.now()).millisecondsSinceEpoch / 1000;
-    double? endTime = prefs.getDouble('logoutTime');
-    if (endTime != null && endTime > time) {
-      user.firstname = (prefs.getString('firstname'))!;
-      user.lastname = (prefs.getString('lastname'))!;
-      user.role = (prefs.getString('role'))!;
-      user.email = (prefs.getString('email'))!;
-      token.value = (prefs.getString('token'))!;
-    } else {
-      await prefs.clear();
-    }
-  } else {
-    await prefs.clear();
-  }
   runApp(Phoenix(child: const MyApp()));
 }
 
