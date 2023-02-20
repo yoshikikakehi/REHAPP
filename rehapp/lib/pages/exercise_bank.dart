@@ -7,7 +7,6 @@ import 'package:rehapp/pages/logout.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
 
 import '../ProgressHUD.dart';
-import '../api/user.dart' as user;
 
 class ExerciseBankPage extends StatefulWidget {
   ExerciseBankPage({Key? key}) : super(key: key);

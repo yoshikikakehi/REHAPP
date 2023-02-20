@@ -7,8 +7,6 @@ import 'package:rehapp/pages/therapist_home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import '../api/token.dart' as token;
-import '../api/user.dart' as user;
 
 Future<void> main() async {
   await Firebase.initializeApp(

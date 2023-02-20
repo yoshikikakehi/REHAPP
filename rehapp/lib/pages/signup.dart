@@ -83,7 +83,7 @@ class _SignupPageState extends State<SignupPage> {
                 TextFormField(
                   validator: (input) =>
                       input!.length > 1 ? null : FILL_OUT_NAME,
-                  onSaved: (input) => requestModel.firstname = input!,
+                  onSaved: (input) => requestModel.firstName = input!,
                   decoration: InputDecoration(
                     hintText: "First name",
                     enabledBorder: UnderlineInputBorder(
@@ -107,7 +107,7 @@ class _SignupPageState extends State<SignupPage> {
                 TextFormField(
                   validator: (input) =>
                       input!.length > 1 ? null : FILL_OUT_NAME,
-                  onSaved: (input) => requestModel.lastname = input!,
+                  onSaved: (input) => requestModel.lastName = input!,
                   decoration: InputDecoration(
                     hintText: "Last name",
                     enabledBorder: UnderlineInputBorder(

@@ -14,8 +14,6 @@ import 'package:rehapp/pages/exercise_detail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../ProgressHUD.dart';
-import '../api/token.dart' as token;
-import '../api/user.dart' as user;
 
 bool checked = false;
 
@@ -193,35 +191,22 @@ class _LoginPageState extends State<LoginPage> {
                           isApiCallProcess = false;
                         });
                         if (userCredential.user != null) {
-                          FirebaseFirestore.instance
-                            .collection("users")
-                            .doc(userCredential.user?.uid)
-                            .get().then(
-                              (DocumentSnapshot doc) async {
-                                final data = doc.data() as Map<String, dynamic>;
-                                user.firstname = data?["firstname"];
-                                user.lastname = data["lastname"];
-                                user.role = data["role"];
-                                user.email = data["email"];
-                                const snackBar = SnackBar(
-                                  content: Text(LOGIN_SUCCESS_SNACKBAR),
-                                );
-                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                if (data["role"] == "therapist") {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const TherapistHomePage()));
-                                } else {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => HomePage()));
-                                }
-                              },
-                              onError: (e) => print("Error getting document: $e"),
-                            );
+                          apiService.getCurrentUserData()
+                            .then((userValue) {
+                              const snackBar = SnackBar(
+                                content: Text(LOGIN_SUCCESS_SNACKBAR),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              if (userValue["role"] == "therapist") {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => TherapistHomePage()));
+                              } else {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => HomePage()));
+                              }
+                            });
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

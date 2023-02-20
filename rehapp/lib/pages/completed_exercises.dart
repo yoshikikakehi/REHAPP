@@ -7,7 +7,6 @@ import 'package:rehapp/pages/logout.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
 
 import '../ProgressHUD.dart';
-import '../api/user.dart' as user;
 
 class CompletedExercisePage extends StatefulWidget {
   List<Exercise> completedExercises;
@@ -113,6 +112,7 @@ class _CompletedExercisePageState extends State<CompletedExercisePage> {
                             ? const Text(
                                 "Looks like you have no exercises assigned.")
                             : RefreshIndicator(
+                                displacement: 0.0,
                                 onRefresh: () async {
                                   APIService apiService = APIService();
                                   await apiService
