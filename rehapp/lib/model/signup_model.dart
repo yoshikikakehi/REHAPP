@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
+//this model is used for signing up the user either as a patient or a therapist
 class SignupResponseModel {
   final String error;
 
