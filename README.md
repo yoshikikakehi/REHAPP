@@ -77,6 +77,26 @@ Inside lib are several folders that all contain the vast majority of frontend co
 * [Flutter Youtube Channel](https://www.youtube.com/c/flutterdev)
 
 # Release Notes
+## New software features (Version 0.2.0)
+
+Note: The implementation of new features are repeated in the v0.1.0 release notes, as we are in the process of migrating from Azure to Firebase.
+
+### General Features
+* Create an account as either a therapist or patient
+* Log in with created credentials
+
+### Therapist Features
+* Add a patient via email
+* View list of patients
+* Delete a patient
+* Assign an exercise to a patient (details shown in v0.1.0 release notes)
+
+### Bug Fixes
+* Migration from Azure to Firebase has successfully began. We will continue to re-implement current features in Sprint 3.
+
+### Known Issues
+* When a therapist attempts to add a patient that does not exist, the error message that displays is unclear. 
+
 ## New software features (Version 0.1.1)
 
 ### General Features
@@ -86,11 +106,6 @@ Inside lib are several folders that all contain the vast majority of frontend co
 * Currently, the previous Azure database service is expired. By Sprint 2, a new database should be configured.
     
 ## New software features (Version 0.1.0)
-
-### General Features
-* Create an account as either a therapist or patient
-* Login with created credentials
-* Log out
 
 ### Patient Features
 * View incomplete assigned exercises
