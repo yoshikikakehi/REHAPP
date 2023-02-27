@@ -1,3 +1,4 @@
+//this is the class that assigns the exercise to patients
 class AssignExerciseResponseModel {
   final String status;
 
