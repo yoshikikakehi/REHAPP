@@ -12,6 +12,7 @@ class LoginResponseModel {
   final String error;
   final User user;
 
+  // should create additional checks to confirm all fields are valid
   LoginResponseModel(
       {this.token = "",
       this.success = false,
