@@ -1,3 +1,4 @@
+//this class is for signup stuff
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
