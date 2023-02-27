@@ -231,7 +231,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
-                Container(
+               /* Container(
                   color: Colors.white,
                   constraints: BoxConstraints(minWidth: 100, maxWidth: 200),
                   margin: const EdgeInsets.only(left: 20.0, right: 20.0),
@@ -250,7 +250,7 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
                   ),
-                ),
+                ),*/
                 Padding(
                   padding: const EdgeInsets.only(top: 10.0),
                   child: InkWell(
