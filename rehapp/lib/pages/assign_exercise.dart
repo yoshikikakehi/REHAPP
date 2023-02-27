@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/assets/constants.dart';
 import 'package:rehapp/model/assign_exercise_model.dart';
-import 'package:rehapp/model/user_model.dart';
 import 'package:rehapp/pages/exercise_bank.dart';
 //import 'package:rehapp/model/contact_model.dart';
 
@@ -10,8 +9,8 @@ import '../api/chosen_exercise_bank.dart' as chosenExercise;
 import '../ProgressHUD.dart';
 
 class AssignExercisePage extends StatefulWidget {
-  final User user;
-  const AssignExercisePage({Key? key, required this.user}) : super(key: key);
+  final Map<String, dynamic> patient;
+  const AssignExercisePage({Key? key, required this.patient}) : super(key: key);
 
   @override
   AssignExercisePageState createState() {
@@ -57,7 +56,7 @@ class AssignExercisePageState extends State<AssignExercisePage> {
   var child;
   @override
   Widget _uiSetup(BuildContext context) {
-    final appTitle = 'Assign Exercise to ${widget.user.firstname}';
+    final appTitle = 'Assign Exercise to ${widget.patient["firstName"]}';
 
     return MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -302,7 +301,7 @@ class AssignExercisePageState extends State<AssignExercisePage> {
                         isApiCallProcess = true;
                       });
                       if (validateAndSave()) {
-                        requestModel.patientEmail = widget.user.email;
+                        requestModel.patientEmail = widget.patient["email"];
                         APIService apiService = APIService();
                         List<String> frequency =
                             requestModel.exerciseFrequency.split(';');

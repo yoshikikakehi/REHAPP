@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/delete_exercise_model.dart';
 import 'package:rehapp/model/exercise_model.dart';
-import 'package:rehapp/model/user_model.dart';
 import 'package:rehapp/pages/assign_exercise.dart';
 import 'package:rehapp/pages/login.dart';
 import 'package:rehapp/pages/logout.dart';
@@ -11,11 +10,11 @@ import 'package:rehapp/pages/therapist_exercise_view.dart';
 import '../ProgressHUD.dart';
 
 class TherapistCompletedExercisePage extends StatefulWidget {
-  final User user;
+  final Map<String, dynamic> patient;
   List<Exercise> completedExercises;
 
   TherapistCompletedExercisePage(
-      {Key? key, required this.user, required this.completedExercises})
+      {Key? key, required this.patient, required this.completedExercises})
       : super(key: key);
 
   @override
@@ -36,11 +35,11 @@ class _TherapistCompletedExercisePageState
   int selectedPage = 1;
   final _pageOptions = [
     TherapistCompletedExercisePage(
-      user: User(),
+      patient: Map<String, dynamic>(),
       completedExercises: [],
     ),
     TherapistCompletedExercisePage(
-      user: User(),
+      patient: Map<String, dynamic>(),
       completedExercises: [],
     ),
     LogoutPage(),
@@ -139,7 +138,7 @@ class _TherapistCompletedExercisePageState
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               AssignExercisePage(
-                                                  user: widget.user),
+                                                  patient: widget.patient),
                                         )),
                                     icon: const Icon(
                                         Icons.add_circle_outline_rounded,
@@ -165,10 +164,11 @@ class _TherapistCompletedExercisePageState
                           )),
                       Expanded(
                         child: RefreshIndicator(
+                          displacement: 0.0,
                           onRefresh: () async {
                             APIService apiService = APIService();
                             await apiService
-                                .getExercises(widget.user.email)
+                                .getExercises(widget.patient["email"])
                                 .then((value) {
                               setState(() {
                                 widget.completedExercises.clear();

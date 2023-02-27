@@ -8,7 +8,6 @@ import 'package:rehapp/pages/logout.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
 
 import '../ProgressHUD.dart';
-import '../api/user.dart' as user;
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -27,6 +26,7 @@ class _HomePageState extends State<HomePage> {
 
   List<Exercise> exercises = [];
   List<Exercise> completedExercises = [];
+  Map<String, dynamic> user = {};
 
   int selectedPage = 1;
   final _pageOptions = [
@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.max,
                               children: <Widget>[
-                                Text('Welcome, ${user.firstname}',
+                                Text('Welcome, ${user["firstName"]}',
                                     style: const TextStyle(
                                         fontSize: 30,
                                         fontWeight: FontWeight.bold)),
@@ -118,8 +118,7 @@ class _HomePageState extends State<HomePage> {
                                           MaterialPageRoute(
                                               builder: (context) =>
                                                   CompletedExercisePage(
-                                                    completedExercises:
-                                                        completedExercises,
+                                                    completedExercises: completedExercises,
                                                   ))),
                                       child: const Text("Completed Exercises"),
                                     ),
@@ -135,6 +134,7 @@ class _HomePageState extends State<HomePage> {
                             ? const Text(
                                 "Looks like you have no exercises assigned.")
                             : RefreshIndicator(
+                                displacement: 0.0,
                                 onRefresh: () async {
                                   APIService apiService = APIService();
                                   await apiService

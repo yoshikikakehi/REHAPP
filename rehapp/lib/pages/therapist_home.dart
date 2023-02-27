@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/main.dart';
-import 'package:rehapp/model/add_patient_model.dart';
-import 'package:rehapp/model/delete_patient_model.dart';
-import 'package:rehapp/model/user_model.dart';
 import 'package:rehapp/pages/exercise.dart';
 import 'package:rehapp/pages/logout.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../api/user.dart' as user;
 
 class TherapistHomePage extends StatefulWidget {
   const TherapistHomePage({Key? key}) : super(key: key);
@@ -24,6 +21,9 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
   //GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(); // used for the hamburger menu
   final TextEditingController _textFieldController = TextEditingController();
   bool isApiCallProcess = true;
+  APIService apiService = APIService();
+  FirebaseAuth auth = FirebaseAuth.instance;
+  FirebaseFirestore db = FirebaseFirestore.instance;
 
   int selectedPage = 1;
   final _pageOptions = [
@@ -32,53 +32,74 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
     LogoutPage(),
   ];
 
-  List<User> names = [];
-  List<User> items = [];
+  List<dynamic> patients = [];
+  List<dynamic> displayedPatients = [];
+  Map<String, dynamic> user = {
+    'firstName': '',
+    'lastName': '',
+    'email': '',
+    'assignments': [],
+    'role': "therapist",
+    'patients': []
+  };
 
   @override
   void initState() {
-    APIService apiService = APIService();
-    apiService.getPatients().then((value) {
-      if (mounted) {
+    apiService.getCurrentUserData()
+      .then((userValue) {
         setState(() {
-          names.addAll(value.patients);
-          items.addAll(names);
+          user.addAll(userValue);
         });
-      }
-      isApiCallProcess = false;
-    }).catchError((error) {
-      const snackBar = SnackBar(
-        content: Text("Loading patients failed"),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      isApiCallProcess = false;
-    });
+        apiService.getPatients(userValue["patients"])
+          .then((value) {
+            if (mounted) {
+              setState(() {
+                patients.addAll(value);
+                displayedPatients.addAll(value);
+                isApiCallProcess = false;
+              });
+            }
+          }).catchError((error) {
+            const snackBar = SnackBar(
+              content: Text("Loading patients failed"),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            setState(() {
+              isApiCallProcess = false;
+            });
+          });
+      })
+      .catchError((error) {
+        const snackBar = SnackBar(
+          content: Text("Loading current user failed"),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        setState(() {
+          isApiCallProcess = false;
+        });
+      });
     super.initState();
   }
 
   void filterSearchResults(String query) {
     // Implementation for Search Bar
-    List<User> nameSearchList = [];
-    nameSearchList.addAll(names);
-    print(nameSearchList);
     if (query.isNotEmpty) {
-      List<User> nameData = [];
-      for (var user in nameSearchList) {
-        String fullName = user.firstname + " " + user.lastname;
+      List<dynamic> filteredPatients = [];
+      for (var patient in patients) {
+        String fullName = patient["firstName"] + " " + patient["lastName"];
         if (fullName.contains(query)) {
-          nameData.add(user);
-          print(nameData);
+          filteredPatients.add(patient);
         }
       }
       setState(() {
-        items.clear();
-        items.addAll(nameData);
+        displayedPatients.clear();
+        displayedPatients.addAll(filteredPatients);
       });
       return;
     } else {
       setState(() {
-        items.clear();
-        items.addAll(names);
+        displayedPatients.clear();
+        displayedPatients.addAll(patients);
       });
     }
   }
@@ -112,29 +133,33 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
               TextButton(
                 child: const Text('Add'),
                 onPressed: () {
-                  APIService apiService = APIService();
                   apiService
-                      .addPatient(
-                          AddPatientRequestModel(patientEmail: addPatientEmail))
-                      .then((value) {
-                    const snackBar = SnackBar(
-                      content: Text("Adding patient succeeded"),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    setState(() {
-                      Navigator.pop(context);
-                      _textFieldController.clear();
+                    .addPatient(addPatientEmail, user["patients"])
+                    .then((patient) {
+                      const snackBar = SnackBar(
+                        content: Text("Adding patient succeeded"),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      setState(() {
+                        patients.add(patient);
+                        displayedPatients.add(patient);
+                        user.update("patients", (value) {
+                          value.add(patient["id"]);
+                          return value;
+                        });
+                        Navigator.pop(context);
+                        _textFieldController.clear();
+                      });
+                    }).catchError((error) {
+                      var snackBar = SnackBar(
+                        content: Text(error.toString()),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      setState(() {
+                        Navigator.pop(context);
+                        _textFieldController.clear();
+                      });
                     });
-                  }).catchError((error) {
-                    const snackBar = SnackBar(
-                      content: Text("A patient with that email does not exist"),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    setState(() {
-                      Navigator.pop(context);
-                      _textFieldController.clear();
-                    });
-                  });
                 },
               ),
             ],
@@ -171,69 +196,78 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
               icon: Icon(Icons.account_circle_outlined), label: 'Account'),
         ],
       ),
-      body: selectedPage != 2
-          ? Stack(
+      body: selectedPage != 2 ? Stack(
               children: <Widget>[
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(10.0),
                     child: Column(children: <Widget>[
                       Container(
-                        height: 80,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text("Hi " + user.firstname,
-                                    style: const TextStyle(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.bold)),
-                                const Text('Here are your patients:',
-                                    style: TextStyle(fontSize: 20)),
-                              ],
-                            ),
-                            Column(
-                              children: <Widget>[
-                                IconButton(
-                                    onPressed: () =>
-                                        {_displayTextInputDialog(context)},
+                        height: 90,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text("Hi " + user["firstName"],
+                                      style: const TextStyle(
+                                          fontSize: 30,
+                                          fontWeight: FontWeight.bold)),
+                                  const Text('Here are your patients:',
+                                      style: TextStyle(fontSize: 20)),
+                                ],
+                              ),
+                              Column(
+                                children: <Widget>[
+                                  IconButton(
+                                    iconSize: 35,
+                                    onPressed: () => {_displayTextInputDialog(context)},
                                     icon: const Icon(
-                                        Icons.add_circle_outline_rounded,
-                                        color: Colors.black)),
-                              ],
-                            ),
-                          ],
+                                      Icons.add_circle_outline_rounded,
+                                      color: Colors.black,
+                                    )
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      TextField(
-                          // Search Bar
-                          onChanged: (value) {
-                            filterSearchResults(value);
-                          },
-                          controller: editingController,
-                          decoration: const InputDecoration(
-                            labelText: "Search",
-                            hintText: "Search",
-                            prefixIcon: Icon(Icons.search),
-                            border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(25.0))),
-                          )),
+                      Container(
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: 10.0),
+                          child: TextField(
+                            // Search Bar
+                            onChanged: (value) {
+                              filterSearchResults(value);
+                            },
+                            controller: editingController,
+                            decoration: const InputDecoration(
+                              labelText: "Search",
+                              hintText: "Search",
+                              prefixIcon: Icon(Icons.search),
+                              border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(25.0))),
+                            )),
+                        ),
+                      ),
                       Expanded(
                         child: RefreshIndicator(
+                          displacement: 0.0,
                           onRefresh: () async {
-                            APIService apiService = APIService();
-                            await apiService.getPatients().then((value) {
+                            await apiService.getPatients(user["patients"]).then((value) {
                               setState(() {
-                                names.clear();
-                                items.clear();
-                                names.addAll(value.patients);
-                                items.addAll(names);
+                                patients.clear();
+                                displayedPatients.clear();
+                                patients.addAll(value);
+                                displayedPatients.addAll(value);
                               });
-                              isApiCallProcess = false;
                             }).catchError((error) {
+                              print(error);
                               const snackBar = SnackBar(
                                 content: Text("Retrieving patients failed"),
                               );
@@ -241,50 +275,58 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                   .showSnackBar(snackBar);
                             });
                           },
-                          child: ListView.builder(
+                          child: user["patients"].length == 0 ? Container(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "No patients have been added yet",
+                              style: TextStyle(
+                                color: const Color(0x88888888).withOpacity(0.7),
+                                fontSize: 16.0
+                              )
+                            ),
+                          ) : ListView.builder(
                               physics: const BouncingScrollPhysics(
                                   parent: AlwaysScrollableScrollPhysics()),
                               controller: _controller,
-                              itemCount: items.length,
+                              itemCount: displayedPatients.length,
                               itemBuilder: (context, index) {
                                 return ClipRRect(
                                   borderRadius: BorderRadius.circular(20.0),
                                   child: Padding(
                                     padding: const EdgeInsets.all(5.0),
                                     child: Dismissible(
-                                      // Swiping to remove a patient
-                                      key: Key(items[index].email),
+                                      key: Key(displayedPatients.elementAt(index)["email"]),
                                       background: Container(
-                                        alignment:
-                                            AlignmentDirectional.centerEnd,
+                                        alignment: AlignmentDirectional.centerEnd,
                                         color: Colors.red,
                                         child: const Padding(
-                                            padding:
-                                                EdgeInsets.only(right: 10.0),
-                                            child: Icon(Icons.delete,
-                                                color: Colors.white)),
+                                          padding: EdgeInsets.only(right: 10.0),
+                                          child: Icon(
+                                            Icons.delete,
+                                            color: Colors.white
+                                          )
+                                        ),
                                       ),
                                       onDismissed: (direction) {
-                                        APIService apiService = APIService();
-                                        apiService
-                                            .deletePatient(
-                                                DeletePatientRequestModel(
-                                                    patientEmail:
-                                                        items[index].email))
-                                            .then((value) {
-                                          setState(() {
-                                            items.removeAt(index);
-                                            names.removeAt(index);
+                                        apiService.deletePatient(user["patients"].elementAt(index))
+                                          .then((value) {
+                                            setState(() {
+                                              displayedPatients.removeAt(index);
+                                              patients.removeAt(index);
+                                              user.update("patients", (value) {
+                                                value.removeAt(index);
+                                                return value;
+                                              });
+                                            });
+                                          }).catchError((error) {
+                                            print(error);
+                                            const snackBar = SnackBar(
+                                              content:
+                                                  Text("Deleting patient failed"),
+                                            );
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(snackBar);
                                           });
-                                        }).catchError((error) {
-                                          print(error);
-                                          const snackBar = SnackBar(
-                                            content:
-                                                Text("Deleting patient failed"),
-                                          );
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(snackBar);
-                                        });
                                       },
                                       confirmDismiss: (direction) async {
                                         return await showDialog(
@@ -319,22 +361,23 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                               Colors.blue.withAlpha(30),
                                           onTap: () {
                                             Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        ExercisePage(
-                                                          user: items[index],
-                                                        )));
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => ExercisePage(patient: displayedPatients.elementAt(index))
+                                              )
+                                            );
                                           },
                                           child: ListTile(
-                                            title: Text(items[index].firstname +
-                                                " " +
-                                                items[index].lastname),
-                                            subtitle: Text(items[index]
-                                                .email), //will have to fix this later since subtitles list will shift while searching
-                                            leading: const Icon(
+                                            title: Text(displayedPatients.elementAt(index)["firstName"] + " " + displayedPatients.elementAt(index)["lastName"]),
+                                            subtitle: Text(displayedPatients.elementAt(index)["email"]),
+                                            leading: Container(
+                                              height: double.infinity,
+                                              child: const Icon(
                                                 Icons.account_circle_outlined,
-                                                color: Colors.black),
+                                                color: Colors.black,
+                                                size: 25,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
