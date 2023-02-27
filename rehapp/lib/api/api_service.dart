@@ -62,7 +62,7 @@ class APIService {
   }
 
   // Not in use
-  Future<VerifyResponseModel> verify(VerifyRequestModel requestModel) async {
+  /*Future<VerifyResponseModel> verify(VerifyRequestModel requestModel) async {
     String url = "https://jd.pathfinderfs.com/api/auth/verify-email";
     final response = await http.post(
       Uri.parse(url),
@@ -75,7 +75,7 @@ class APIService {
     } else {
       throw Exception('Failed to load Data');
     }
-  }
+  }*/
 
   Future<Map<String, dynamic>> getCurrentUserData() async {
     Map<String, dynamic> curUser = {};
