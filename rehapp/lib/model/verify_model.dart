@@ -1,32 +1,33 @@
-class VerifyResponseModel {
-  final String error;
+//commenting out this file it is not used
+// class VerifyResponseModel {
+//   final String error;
+//
+//   VerifyResponseModel({this.error = ""});
+//
+//   factory VerifyResponseModel.fromJson(Map<String, dynamic> json) {
+//     print('you better be rurnign');
+//     return VerifyResponseModel(
+//       error: json["error"] ?? "",
+//     );
+//   }
+//
+//   factory VerifyResponseModel.fromEmpty() {
+//     return VerifyResponseModel(
+//       error: "",
+//     );
+//   }
+// }
 
-  VerifyResponseModel({this.error = ""});
+// class VerifyRequestModel {
+//   String emailToken;
 
-  factory VerifyResponseModel.fromJson(Map<String, dynamic> json) {
-    print('you better be rurnign');
-    return VerifyResponseModel(
-      error: json["error"] ?? "",
-    );
-  }
+//   VerifyRequestModel({this.emailToken = ""});
 
-  factory VerifyResponseModel.fromEmpty() {
-    return VerifyResponseModel(
-      error: "",
-    );
-  }
-}
+//   Map<String, dynamic> toJson() {
+//     Map<String, dynamic> map = {
+//       'emailToken': emailToken.trim(),
+//     };
 
-class VerifyRequestModel {
-  String emailToken;
-
-  VerifyRequestModel({this.emailToken = ""});
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> map = {
-      'emailToken': emailToken.trim(),
-    };
-
-    return map;
-  }
-}
+//     return map;
+//   }
+// }
