@@ -2,6 +2,8 @@ import 'package:rehapp/model/user_model.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
+//this model is used for logging in the user either as a patient or a therapist
+
 class LoginResponseModel {
   final String token;
   final bool success;
