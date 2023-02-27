@@ -5,28 +5,14 @@ import 'package:rehapp/pages/home.dart';
 import 'package:rehapp/pages/login.dart';
 import 'package:rehapp/pages/therapist_home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../api/token.dart' as token;
-import '../api/user.dart' as user;
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   WidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool status = prefs.getBool('isLoggedIn') ?? false;
-  if (status) {
-    double time = (DateTime.now()).millisecondsSinceEpoch / 1000;
-    double? endTime = prefs.getDouble('logoutTime');
-    if (endTime != null && endTime > time) {
-      user.firstname = (prefs.getString('firstname'))!;
-      user.lastname = (prefs.getString('lastname'))!;
-      user.role = (prefs.getString('role'))!;
-      user.email = (prefs.getString('email'))!;
-      token.value = (prefs.getString('token'))!;
-    } else {
-      await prefs.clear();
-    }
-  } else {
-    await prefs.clear();
-  }
   runApp(Phoenix(child: const MyApp()));
 }
 

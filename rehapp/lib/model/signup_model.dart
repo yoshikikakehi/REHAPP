@@ -21,27 +21,31 @@ class SignupResponseModel {
 }
 
 class SignupRequestModel {
-  String firstname;
-  String lastname;
+  String firstName;
+  String lastName;
   String email;
   String password;
   String role; // Hashing Process
 
   SignupRequestModel(
-      {this.firstname = "",
-      this.lastname = "",
+      {this.firstName = "",
+      this.lastName = "",
       this.email = "",
       this.password = "",
       this.role = ""});
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> map = {
-      'firstname': firstname.trim(),
-      'lastname': lastname.trim(),
+      'firstName': firstName.trim(),
+      'lastName': lastName.trim(),
       'email': email.trim(),
-      'password': sha256.convert(utf8.encode(password)).toString(),
       'role': role.trim(),
+      'assignments': [],
     };
+
+    if (role == "therapist") {
+      map['patients'] = [];
+    }
 
     return map;
   }

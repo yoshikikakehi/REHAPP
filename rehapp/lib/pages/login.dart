@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/assets/constants.dart';
 import 'package:rehapp/main.dart';
@@ -12,8 +14,6 @@ import 'package:rehapp/pages/exercise_detail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../ProgressHUD.dart';
-import '../api/token.dart' as token;
-import '../api/user.dart' as user;
 
 bool checked = false;
 
@@ -37,24 +37,24 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void transferLogin() async {
-    if (user.firstname.isNotEmpty &&
-        user.lastname.isNotEmpty &&
-        user.role.isNotEmpty &&
-        user.email.isNotEmpty &&
-        token.value.isNotEmpty) {
-      if (user.role == "therapist") {
-        Future.delayed(Duration.zero, () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const TherapistHomePage()));
+    if (FirebaseAuth.instance.currentUser != null) {
+      APIService apiService = APIService();
+      apiService.getCurrentUserData()
+        .then((userValue) {
+          if (userValue["role"] == "therapist") {
+            Future.delayed(Duration.zero, () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const TherapistHomePage()));
+            });
+          } else {
+            Future.delayed(Duration.zero, () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => HomePage()));
+            });
+          }
         });
-      } else {
-        Future.delayed(Duration.zero, () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => HomePage()));
-        });
-      }
     }
   }
 
@@ -186,49 +186,33 @@ class _LoginPageState extends State<LoginPage> {
                         isApiCallProcess = true;
                       });
                       APIService apiService = APIService();
-                      apiService.login(requestModel).then((value) async {
+                      apiService.login(requestModel).then((userCredential) async {
                         setState(() {
                           isApiCallProcess = false;
                         });
-                        if (value.success) {
-                          user.firstname = value.user.firstname;
-                          user.lastname = value.user.lastname;
-                          user.role = value.user.role;
-                          user.email = value.user.email;
-                          token.value = value.token;
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          double time =
-                              (DateTime.now()).millisecondsSinceEpoch / 1000;
-                          prefs.setDouble("logoutTime", time + value.expiresIn);
-                          prefs.setBool("isLoggedIn", true);
-                          prefs.setString("firstname", value.user.firstname);
-                          prefs.setString("lastname", value.user.lastname);
-                          prefs.setString("role", value.user.role);
-                          prefs.setString("email", value.user.email);
-                          prefs.setString("token", value.token);
-                          const snackBar = SnackBar(
-                            content: Text(LOGIN_SUCCESS_SNACKBAR),
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                          if (value.user.role == "therapist") {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const TherapistHomePage()));
-                          } else {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => HomePage()));
-                          }
+                        if (userCredential.user != null) {
+                          apiService.getCurrentUserData()
+                            .then((userValue) {
+                              const snackBar = SnackBar(
+                                content: Text(LOGIN_SUCCESS_SNACKBAR),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              if (userValue["role"] == "therapist") {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => TherapistHomePage()));
+                              } else {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => HomePage()));
+                              }
+                            });
                         } else {
-                          final snackBar = SnackBar(
-                            content:
-                                Text(value.success ? "Success" : "Failure"),
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Failure"),
+                            )
                           );
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         }
                       }).catchError((onError) {
                         setState(() {
@@ -249,10 +233,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 Container(
                   color: Colors.white,
+                  constraints: BoxConstraints(minWidth: 100, maxWidth: 200),
+                  margin: const EdgeInsets.only(left: 20.0, right: 20.0),
                   alignment: Alignment.center,
-                  //padding: const EdgeInsets.only(left: 370),
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 0, horizontal: 215),
                   child: Material(
                     child: CheckboxListTile(
                       tileColor: Colors.white,
