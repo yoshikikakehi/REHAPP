@@ -17,16 +17,16 @@ class VerifyResponseModel {
   }
 }
 
-class VerifyRequestModel {
-  String emailToken;
+// class VerifyRequestModel {
+//   String emailToken;
 
-  VerifyRequestModel({this.emailToken = ""});
+//   VerifyRequestModel({this.emailToken = ""});
 
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> map = {
-      'emailToken': emailToken.trim(),
-    };
+//   Map<String, dynamic> toJson() {
+//     Map<String, dynamic> map = {
+//       'emailToken': emailToken.trim(),
+//     };
 
-    return map;
-  }
-}
+//     return map;
+//   }
+// }
