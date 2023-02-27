@@ -29,6 +29,13 @@
             {
               "client_id": "786221558289-phj8g3undordmm26k6bbg7hb7uml8rv4.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "786221558289-fp5okiduq6uprs7vg8ofe5nv3dq6658c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.rehapp"
+              }
             }
           ]
         }
