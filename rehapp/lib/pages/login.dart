@@ -12,6 +12,7 @@ import 'package:rehapp/pages/therapist_home.dart';
 import 'package:rehapp/pages/assign_exercise.dart';
 import 'package:rehapp/pages/exercise_detail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rehapp/pages/forgot_password.dart';
 
 import '../ProgressHUD.dart';
 import '../api/token.dart' as token;
@@ -41,22 +42,21 @@ class _LoginPageState extends State<LoginPage> {
   void transferLogin() async {
     if (FirebaseAuth.instance.currentUser != null) {
       APIService apiService = APIService();
-      apiService.getCurrentUserData()
-        .then((userValue) {
-          if (userValue["role"] == "therapist") {
-            Future.delayed(Duration.zero, () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const TherapistHomePage()));
-            });
-          } else {
-            Future.delayed(Duration.zero, () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => HomePage()));
-            });
-          }
-        });
+      apiService.getCurrentUserData().then((userValue) {
+        if (userValue["role"] == "therapist") {
+          Future.delayed(Duration.zero, () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const TherapistHomePage()));
+          });
+        } else {
+          Future.delayed(Duration.zero, () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => HomePage()));
+          });
+        }
+      });
     }
   }
 
@@ -188,46 +188,48 @@ class _LoginPageState extends State<LoginPage> {
                         isApiCallProcess = true;
                       });
                       APIService apiService = APIService();
-                      apiService.login(requestModel).then((userCredential) async {
+                      apiService
+                          .login(requestModel)
+                          .then((userCredential) async {
                         setState(() {
                           isApiCallProcess = false;
                         });
                         if (userCredential.user != null) {
                           FirebaseFirestore.instance
-                            .collection("users")
-                            .doc(userCredential.user?.uid)
-                            .get().then(
-                              (DocumentSnapshot doc) async {
-                                final data = doc.data() as Map<String, dynamic>;
-                                user.firstname = data?["firstname"];
-                                user.lastname = data["lastname"];
-                                user.role = data["role"];
-                                user.email = data["email"];
-                                const snackBar = SnackBar(
-                                  content: Text(LOGIN_SUCCESS_SNACKBAR),
-                                );
-                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                if (data["role"] == "therapist") {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const TherapistHomePage()));
-                                } else {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => HomePage()));
-                                }
-                              },
-                              onError: (e) => print("Error getting document: $e"),
-                            );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Failure"),
-                            )
+                              .collection("users")
+                              .doc(userCredential.user?.uid)
+                              .get()
+                              .then(
+                            (DocumentSnapshot doc) async {
+                              final data = doc.data() as Map<String, dynamic>;
+                              user.firstname = data?["firstname"];
+                              user.lastname = data["lastname"];
+                              user.role = data["role"];
+                              user.email = data["email"];
+                              const snackBar = SnackBar(
+                                content: Text(LOGIN_SUCCESS_SNACKBAR),
+                              );
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(snackBar);
+                              if (data["role"] == "therapist") {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const TherapistHomePage()));
+                              } else {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => HomePage()));
+                              }
+                            },
+                            onError: (e) => print("Error getting document: $e"),
                           );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text("Failure"),
+                          ));
                         }
                       }).catchError((onError) {
                         setState(() {
@@ -246,6 +248,22 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
+                SizedBox(
+                  height: 20,
+                ),
+                GestureDetector(
+                  child: Text(
+                    FORGOT_PASSWORD,
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontSize: 20,
+                    ),
+                  ),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => ForgotPassword(),
+                  )),
+                ),
                 Container(
                   color: Colors.white,
                   constraints: BoxConstraints(minWidth: 100, maxWidth: 200),
@@ -258,7 +276,7 @@ class _LoginPageState extends State<LoginPage> {
                       controlAffinity: ListTileControlAffinity.platform,
                       selected: false,
                       value: checked,
-                      onChanged:(bool? value) {
+                      onChanged: (bool? value) {
                         setState(() {
                           checked = value!;
                         });
@@ -286,7 +304,6 @@ class _LoginPageState extends State<LoginPage> {
                           ],
                         ),
                       )),
-
                 ),
               ]),
             ),

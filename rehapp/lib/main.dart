@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:rehapp/pages/home.dart';
 import 'package:rehapp/pages/login.dart';
+import 'package:rehapp/pages/signup.dart';
 import 'package:rehapp/pages/therapist_home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
           systemNavigationBarIconBrightness: Brightness.dark,
           statusBarIconBrightness: Brightness.dark,
         ),
+        //change it back to LoginPage()
         child: LoginPage(),
       ),
     );

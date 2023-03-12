@@ -6,6 +6,7 @@ import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/signup_model.dart';
 import 'package:rehapp/pages/login.dart';
 import 'package:rehapp/pages/verify.dart';
+import 'package:rehapp/pages/verify_email.dart';
 
 import '../ProgressHUD.dart';
 
@@ -229,11 +230,15 @@ class _SignupPageState extends State<SignupPage> {
                         setState(() {
                           isApiCallProcess = false;
                         });
-                        const snackBar = SnackBar(
-                          content: Text(EMAIL_SUCCESS_SNACKBAR),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        Navigator.pop(context);
+                        // const snackBar = SnackBar(
+                        //   content: Text(EMAIL_SUCCESS_SNACKBAR),
+                        // );
+                        //ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        //-------SEND TO VERIFY EMAIL PAGE------
+                        //Navigator.pop(context);
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => VerifyEmail(),
+                        ));
                       }).catchError((onError) {
                         print(onError);
                         setState(() {

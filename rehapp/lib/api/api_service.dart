@@ -19,13 +19,13 @@ import 'package:rehapp/model/get_patient_model.dart';
 class APIService {
   static FirebaseAuth auth = FirebaseAuth.instance;
   static FirebaseFirestore db = FirebaseFirestore.instance;
-  
+
   Future<UserCredential> login(LoginRequestModel requestModel) async {
     try {
-      final UserCredential userCredential = await auth.signInWithEmailAndPassword(
-        email: requestModel.email.toLowerCase().trim(),
-        password: requestModel.password.trim()
-      );
+      final UserCredential userCredential =
+          await auth.signInWithEmailAndPassword(
+              email: requestModel.email.toLowerCase().trim(),
+              password: requestModel.password.trim());
 
       return userCredential;
     } on FirebaseAuthException catch (e) {
@@ -41,14 +41,14 @@ class APIService {
   Future<UserCredential> signup(SignupRequestModel requestModel) async {
     try {
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-        email: requestModel.email.toLowerCase().trim(),
-        password: requestModel.password.trim()
-      );
-      
-      db.collection("users")
-        .doc(userCredential.user?.uid)
-        .set(requestModel.toJson())
-        .onError((e, _) => print("User already exists: $e"));
+          email: requestModel.email.toLowerCase().trim(),
+          password: requestModel.password.trim());
+
+      db
+          .collection("users")
+          .doc(userCredential.user?.uid)
+          .set(requestModel.toJson())
+          .onError((e, _) => print("User already exists: $e"));
 
       // await userCredential.user?.sendEmailVerification();
       return userCredential;
@@ -80,84 +80,85 @@ class APIService {
 
   Future<Map<String, dynamic>> getCurrentUserData() async {
     Map<String, dynamic> curUser = {};
-    await db.collection('users')
-      .doc(auth.currentUser?.uid)
-      .get()
-      .then((DocumentSnapshot doc) async {
+    await db
+        .collection('users')
+        .doc(auth.currentUser?.uid)
+        .get()
+        .then((DocumentSnapshot doc) async {
+      final data = doc.data() as Map<String, dynamic>;
+      curUser = {
+        'firstname': data['firstname'],
+        'lastname': data['lastname'],
+        'email': data['email'],
+        'assignments': data['assignments'],
+        'role': data['role']
+      };
+      if (curUser["role"] == "therapist") {
+        curUser["patients"] = data["patients"];
+      }
+    });
+    return curUser;
+  }
+
+  Future<List<dynamic>> getPatients(List<dynamic> patientIds) async {
+    List<dynamic> patients = List.filled(patientIds.length, {});
+    for (var i = 0; i < patientIds.length; i++) {
+      await db
+          .collection("users")
+          .doc(patientIds[i])
+          .get()
+          .then((DocumentSnapshot doc) {
         final data = doc.data() as Map<String, dynamic>;
-        curUser = {
+        patients[i] = {
+          'id': patientIds[i],
           'firstname': data['firstname'],
           'lastname': data['lastname'],
           'email': data['email'],
           'assignments': data['assignments'],
           'role': data['role']
         };
-        if (curUser["role"] == "therapist") {
-          curUser["patients"] = data["patients"];
-        }
-      });
-      return curUser;
-  }
-
-  Future<List<dynamic>> getPatients(
-      List<dynamic> patientIds) async {
-    List<dynamic> patients = List.filled(patientIds.length, {});
-    for(var i = 0 ; i < patientIds.length; i++ ) {
-      await db.collection("users")
-        .doc(patientIds[i])
-        .get()
-        .then((DocumentSnapshot doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          patients[i] = {
-            'id': patientIds[i],
-            'firstname': data['firstname'],
-            'lastname': data['lastname'],
-            'email': data['email'],
-            'assignments': data['assignments'],
-            'role': data['role']
-          };
-        })
-        .onError((e, _) => throw Exception("User with inputted email was not found: $e"));
+      }).onError((e, _) =>
+              throw Exception("User with inputted email was not found: $e"));
     }
     return patients;
   }
 
-  Future<Map<String, dynamic>> addPatient(
-      String patientEmail) async {
+  Future<Map<String, dynamic>> addPatient(String patientEmail) async {
     Map<String, dynamic> patient = {};
-    await db.collection('users')
-      .where('email', isEqualTo: patientEmail.toLowerCase().trim())
-      .get()
-      .then((QuerySnapshot query) async {
-        if (query.size == 0 ) {
-          throw Exception("Data was not found");
-        } else if (query.size > 1) {
-          throw Exception('Found more than one user with email: ' + patientEmail.toLowerCase().trim());
-        }
-        final doc = query.docs.elementAt(0);
-        db.collection('users')
-          .doc(auth.currentUser?.uid)
-          .update({"patients": FieldValue.arrayUnion([doc.id])});
-        final data = doc.data() as Map<String, dynamic>;
-        patient = {
-          'id': doc.id,
-          'firstname': data['firstname'],
-          'lastname': data['lastname'],
-          'email': data['email'],
-          'assignments': data['assignments'],
-          'role': data['role']
-        };
-      })
-      .onError((e, _) => throw Exception("User with inputted email was not found: $e"));
-      return patient;
+    await db
+        .collection('users')
+        .where('email', isEqualTo: patientEmail.toLowerCase().trim())
+        .get()
+        .then((QuerySnapshot query) async {
+      if (query.size == 0) {
+        throw Exception("Data was not found");
+      } else if (query.size > 1) {
+        throw Exception('Found more than one user with email: ' +
+            patientEmail.toLowerCase().trim());
+      }
+      final doc = query.docs.elementAt(0);
+      db.collection('users').doc(auth.currentUser?.uid).update({
+        "patients": FieldValue.arrayUnion([doc.id])
+      });
+      final data = doc.data() as Map<String, dynamic>;
+      patient = {
+        'id': doc.id,
+        'firstname': data['firstname'],
+        'lastname': data['lastname'],
+        'email': data['email'],
+        'assignments': data['assignments'],
+        'role': data['role']
+      };
+    }).onError((e, _) =>
+            throw Exception("User with inputted email was not found: $e"));
+    return patient;
   }
 
-  Future<void> deletePatient(
-      String patientId) async {
-    await db.collection('users')
-      .doc(auth.currentUser?.uid)
-      .update({"patients": FieldValue.arrayRemove([patientId])})
-      .onError((e, _) => throw Exception("Patient with with id: $patientId could not be deleted: $e"));
+  Future<void> deletePatient(String patientId) async {
+    await db.collection('users').doc(auth.currentUser?.uid).update({
+      "patients": FieldValue.arrayRemove([patientId])
+    }).onError((e, _) => throw Exception(
+        "Patient with with id: $patientId could not be deleted: $e"));
   }
 
 // ALL OLD API SERVICES BELOW:

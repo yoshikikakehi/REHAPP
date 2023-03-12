@@ -10,13 +10,25 @@ const String LOGIN_BUTTON_TEXT = 'Login';
 const String DONT_HAVE_ACCOUNT = "Don't have an account? ";
 const String CREATE_ONE_NOW = 'Create one now.';
 const String ARE_YOU_THERAPIST = 'Are you a therapist?';
+const String FORGOT_PASSWORD = 'Forgot Password?';
+
+//Forgot Password Screen
+const String RESET_PASSWORD = 'Reset Password';
+const String RESET_BUTTON_TEXT = 'Reset';
+const String RESET_SUCCESS_SNACKBAR = 'Password Email Sent';
+const String RESET_ERROR_SNACKBAR = 'Password Reset Error';
 
 // Signup Screen
 const String CREATE_AN_ACCOUNT = 'Create an Account';
 const String FILL_OUT_NAME = 'Please fill out your full name';
 const String CREATE_ACCOUNT_BUTTON_TEXT = 'Create';
-const String EMAIL_SUCCESS_SNACKBAR =
-    'Email has been sent with confirmation code.';
+
+//Verify Email Screen
+const String VERIFY_EMAIL_TITLE = 'Verify Email';
+const String VERIFICATION_ERROR_SNACKBAR = 'Email Verification Error';
+const String EMAIL_SUCCESS_SNACKBAR = 'Verification Email has been sent';
+const String RESENT_EMAIL_BUTTON_TEXT = 'Resent Email';
+const String CANCEL_VERIFY_EMAIL_BUTTON_TEXT = 'Cancel';
 
 // Verify Screen
 const String VERIFY_TITLE =
