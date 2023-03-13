@@ -77,6 +77,22 @@ Inside lib are several folders that all contain the vast majority of frontend co
 * [Flutter Youtube Channel](https://www.youtube.com/c/flutterdev)
 
 # Release Notes
+
+## New software features (Version 0.3.0)
+
+### General Features
+* As a patient/therapist, I want to receive a confirmation email after account creation.
+* As a patient/therapist, I want to be able to reset my password.
+* As a therapist, I want a safety box to appear on the patient’s end that confirms that the patient is not at any safety risk and has the appropriate supervision required to complete the exercises.
+* As a therapist, I want my patient to be able to rate the completed exercise with a point system, so it is easier for me to review.
+
+### Bug Fixes
+* Migration from Azure to Firebase has been successfully completed. Exercises can be assigned as a therapist to a patient. All of this is done using Firebase. 
+
+### Known Issues
+* Main branch has errors rendering the login page that need to be resolved.
+* Issues with accessing fields such as images of exercises that no longer exist.
+
 ## New software features (Version 0.2.0)
 
 Note: The implementation of new features are repeated in the v0.1.0 release notes, as we are in the process of migrating from Azure to Firebase.
