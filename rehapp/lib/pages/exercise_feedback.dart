@@ -1,9 +1,13 @@
+//import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/assets/constants.dart';
 import 'package:rehapp/model/exercise_feedback_model.dart';
 import 'package:rehapp/model/exercise_model.dart';
 import 'package:rehapp/pages/home.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+
 
 import '../ProgressHUD.dart';
 
@@ -204,6 +208,37 @@ class ExerciseFeedbackPageState extends State<ExerciseFeedbackPage> {
                         ),
                       ),
                     ),
+                    //hira's code
+                    RatingBar(
+                      minRating: 1,
+                      maxRating: 5,
+                      initialRating: 3,
+                      itemCount: 5,
+                      allowHalfRating: true,
+                      onRatingUpdate: (rating) {
+                        setState(() {
+                          rating = rating;
+                        });
+                      },
+                      itemSize: 15,
+                      itemPadding:
+                      const EdgeInsets.symmetric(horizontal: 4.0),
+                      updateOnDrag: true,
+                      ratingWidget: RatingWidget(
+                          full: const Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                          ),
+                          empty: const Icon(
+                            Icons.star,
+                            color: Colors.grey,
+                          ), half: const Icon(
+                          Icons.star,
+                          color: Colors.blue
+                      )
+                      ),
+                    )
+                    // hira's code end
                   ]),
                 )));
       }),

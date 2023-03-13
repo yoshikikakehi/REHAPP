@@ -58,23 +58,23 @@ class _TherapistExercisePageState extends State<TherapistExercisePage> {
           ? Stack(
               alignment: Alignment.center,
               children: <Widget>[
-                Positioned(
-                  top: 0,
-                  child: FittedBox(
-                    child: widget.exercise.exercisePicture != null &&
-                            widget.exercise.exercisePicture!.isNotEmpty
-                        ? FadeInImage.assetNetwork(
-                            imageErrorBuilder: (context, error, stackTrace) =>
-                                Image.asset("lib/assets/images/default.png"),
-                            fadeInDuration: const Duration(seconds: 1),
-                            placeholder: "lib/assets/images/default.png",
-                            image: widget.exercise.exercisePicture.toString(),
-                            height: 300,
-                          )
-                        : Image.asset("lib/assets/images/default.png"),
-                    fit: BoxFit.fill,
-                  ),
-                ),
+                // Positioned(
+                //   top: 0,
+                //   child: FittedBox(
+                //     child: widget.exercise.exercisePicture != null &&
+                //             widget.exercise.exercisePicture!.isNotEmpty
+                //         ? FadeInImage.assetNetwork(
+                //             imageErrorBuilder: (context, error, stackTrace) =>
+                //                 Image.asset("lib/assets/images/default.png"),
+                //             fadeInDuration: const Duration(seconds: 1),
+                //             placeholder: "lib/assets/images/default.png",
+                //             image: widget.exercise.exercisePicture.toString(),
+                //             height: 300,
+                //           )
+                //         : Image.asset("lib/assets/images/default.png"),
+                //     fit: BoxFit.fill,
+                //   ),
+                // ),
                 Positioned(
                   top: 40,
                   left: 10,
