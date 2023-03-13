@@ -113,14 +113,16 @@ class _HomePageState extends State<HomePage> {
                                         style: TextStyle(fontSize: 20)),
                                     const SizedBox(width: 5),
                                     OutlinedButton(
-                                      onPressed: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
+                                      onPressed: () { Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                  builder: (context) =>
                                                   CompletedExercisePage(
-                                                    completedExercises:
-                                                        completedExercises,
-                                                  ))),
+                                                  completedExercises:
+                                                  completedExercises,
+                                                  )));
+                                                  showAlertDialog(context);
+                                       },
                                       child: const Text("Completed Exercises"),
                                     ),
                                   ],
@@ -223,13 +225,46 @@ class _HomePageState extends State<HomePage> {
                                       );
                                     }),
                               ),
-                      )
+                      ),
                     ]),
                   ),
                 ),
               ],
             )
           : LogoutPage(),
+
     );
+
+
+
+
   }
+}
+
+showAlertDialog(BuildContext context) {
+
+  // set up the button
+  Widget okButton = TextButton(
+    child: Text("OK"),
+    onPressed: () {
+      Navigator.pop(context, "OK");
+    },
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text("Safety Box"),
+    content: Text("If you feel unwell and cannot complete the exercises, do not continue using the app and seek medical help immediately. Continued use of the app means that you accept that you are physically able to complete the exercises."),
+    actions: [
+      okButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
 }
