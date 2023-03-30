@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
@@ -9,6 +9,7 @@ import 'package:rehapp/model/add_patient_model.dart';
 import 'package:rehapp/model/delete_patient_model.dart';
 import 'package:rehapp/pages/exercise.dart';
 import 'package:rehapp/pages/logout.dart';
+import 'package:rehapp/model/user_model.dart';
 
 class TherapistHomePage extends StatefulWidget {
   const TherapistHomePage({Key? key}) : super(key: key);
@@ -107,6 +108,16 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
       });
     }
   }
+
+  // Kiran Added
+  /*User convertToUser(Map<String, dynamic> tempUser) {
+    User newUser = new User();
+    newUser = new User(tempUser["email"], tempUser["firstname"],
+        tempUser["lastname"], tempUser["role"]);
+    return newUser;
+  }*/
+
+  // Kiran end added
 
 // Add patient pop up
   Future<void> _displayTextInputDialog(BuildContext context) async {
@@ -368,7 +379,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                                 MaterialPageRoute(
                                                     builder: (context) =>
                                                         ExercisePage(
-                                                          user: displayedPatients.elementAt(index),
+                                                          user: new User().fromJson(displayedPatients.elementAt(index)),
                                                         )));
                                           },
                                           child: ListTile(

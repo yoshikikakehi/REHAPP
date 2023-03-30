@@ -9,6 +9,9 @@ import 'package:rehapp/pages/logout.dart';
 import 'package:rehapp/pages/therapist_completed_exercise.dart';
 import 'package:rehapp/pages/therapist_exercise_view.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
+
 import '../ProgressHUD.dart';
 
 class ExercisePage extends StatefulWidget {
@@ -41,6 +44,9 @@ class _ExercisePageState extends State<ExercisePage> {
 
   @override
   void initState() {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    FirebaseFirestore db = FirebaseFirestore.instance;
+
     APIService apiService = APIService();
     apiService.getExercises(widget.user.email).then((value) {
       setState(() {

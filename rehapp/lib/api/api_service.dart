@@ -161,6 +161,29 @@ class APIService {
         "Patient with with id: $patientId could not be deleted: $e"));
   }
 
+  /*Future<List<dynamic>> getAssignments(List<dynamic> assignmentIds) async {
+    List<dynamic> assignments = List.filled(assignmentIds.length, {});
+    for (var i = 0; i < assignmentIds.length.length; i++) {
+      await db
+          .collection("assignments")
+          .doc(assignmentIds[i])
+          .get()
+          .then((DocumentSnapshot doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        assignmentIds[i] = {
+          'id': patientIds[i],
+          'firstname': data['firstname'],
+          'lastname': data['lastname'],
+          'email': data['email'],
+          'assignments': data['assignments'],
+          'role': data['role']
+        };
+      }).onError((e, _) =>
+      throw Exception("User with inputted email was not found: $e"));
+    }
+    return patients;
+  }*/
+
 // ALL OLD API SERVICES BELOW:
 // TODO: Refactor all below API services to utilize Firebase
   Future<GetExerciseResponseModel> getExercises(String patientEmail) async {
