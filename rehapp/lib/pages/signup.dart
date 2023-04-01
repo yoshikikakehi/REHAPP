@@ -45,13 +45,13 @@ class _SignupPageState extends State<SignupPage> {
       backgroundColor: Theme.of(context).colorScheme.secondary,
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(top: 50),
-            child: Container(
-                width: double.infinity,
-                alignment: Alignment.topLeft,
-                child: BackButton()),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(top: 50),
+          //   child: Container(
+          //       width: double.infinity,
+          //       alignment: Alignment.topLeft,
+          //       child: BackButton()),
+          // ),
           Container(
             width: double.infinity,
             padding:
@@ -69,9 +69,13 @@ class _SignupPageState extends State<SignupPage> {
             child: Form(
               key: globalFormKey,
               child: Column(children: <Widget>[
-                const SizedBox(
-                  height: 25,
-                ),
+                // const SizedBox(
+                //   height: 25,
+                // ),
+                Container(
+                  width: double.infinity,
+                  alignment: Alignment.topLeft,
+                  child: BackButton()),
                 RichText(
                   text: TextSpan(
                     text: CREATE_AN_ACCOUNT,
