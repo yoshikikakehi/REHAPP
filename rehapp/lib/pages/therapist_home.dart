@@ -219,13 +219,14 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                     padding: const EdgeInsets.all(8.0),
                     child: Column(children: <Widget>[
                       Container(
-                        height: 80,
+                        height: 110,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
+                                BackButton(),
                                 Text("Hi " + user["firstname"],
                                     style: const TextStyle(
                                         fontSize: 30,
