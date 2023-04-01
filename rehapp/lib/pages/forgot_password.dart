@@ -76,9 +76,10 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               key: globalFormKey,
               child: Column(children: <Widget>[
                 //---------TITLE - RESET PASSWORD--------
-                const SizedBox(
-                  height: 25,
-                ),
+                Container(
+                      width: double.infinity,
+                      alignment: Alignment.topLeft,
+                      child: BackButton()),
                 RichText(
                   text: TextSpan(
                     text: RESET_PASSWORD,
