@@ -78,6 +78,16 @@ Inside lib are several folders that all contain the vast majority of frontend co
 
 # Release Notes
 
+## New software features (Version 0.4.0)
+
+### General Features
+* Return to login page using a back button
+* Upload a profile picture on the account page
+* Upload personal information (email, number, role, etc.) and display it on account page
+
+### Known Issues
+* We are currently facing an error when trying to load the exercise page for either the therapist or the patient user. This issue should be resolved by Sprint 5.
+
 ## New software features (Version 0.3.0)
 
 ### General Features
