@@ -1,4 +1,7 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rehapp/api/api_service.dart';
@@ -29,7 +32,8 @@ class Logout extends State<LogoutPage> {
         info = userValue.toString();
         info = "Name: " + userValue['firstname'] + " " + userValue['lastname'];
         info = info + "\nRole: " + userValue['role'] + "\nEmail: " + userValue['email'];
-        info = info + "\nTherapist Contact Number (8am -8 pm): " + "(800)-111-111";
+        info = info + "\nTherapist Contact Number (8am -8pm): " + "(800)-111-111";
+
         //print(info);
         userInfo = info;
     });
@@ -48,10 +52,12 @@ class Logout extends State<LogoutPage> {
           //crossAxisAlignment: CrossAxisAlignment.center,
         children: [SizedBox(
         width: 200,
-        height: 100,
+        height: 200,
         child: Align(
           alignment: Alignment.center,
-          child: ElevatedButton(
+
+          child: Column( mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [ElevatedButton(
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               user.firstname = "";
@@ -64,7 +70,7 @@ class Logout extends State<LogoutPage> {
               Phoenix.rebirth(context);
             },
             child: const Text(
-              "Logout?",
+              "Logout",
               style: TextStyle(fontSize: 28, color: Colors.white),
             ),
             style: ButtonStyle(
@@ -73,7 +79,57 @@ class Logout extends State<LogoutPage> {
               ),
             ),
           ),
-        ),
+            MaterialButton(
+                color: Colors.blue,
+                child: const Text(
+                    "Pick Image from Gallery",
+                    style: TextStyle(
+                        color: Colors.white70, fontWeight: FontWeight.bold
+                    )
+                ),
+                onPressed: () {
+                  File? image;
+                  Future pickImage() async {
+                    try {
+                      //final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+                      if(image == null) return;
+                      //final imageTemp = File(image.path);
+                      //setState(() => this.image = imageTemp);
+                    } on PlatformException catch(e) {
+                      print('Failed to pick image: $e');
+                    }
+                  }
+                }
+            ),
+            MaterialButton(
+                color: Colors.blue,
+                child: const Text(
+                    "Pick Image from Camera",
+                    style: TextStyle(
+                        color: Colors.white70, fontWeight: FontWeight.bold
+
+                    )
+                ),
+                onPressed: () {
+                  File? image;
+                  Future pickImage() async {
+                    try {
+                      //final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+                      if(image == null) return;
+                      //final imageTemp = File(image.path);
+                      //setState(() => this.image = imageTemp);
+                    } on PlatformException catch(e) {
+                      print('Failed to pick image: $e');
+                    }
+                  }
+                }
+
+            ),
+
+
+          ]
+          )
+        )
       ),
           Container(
             margin: const EdgeInsets.all(10.0),
@@ -91,7 +147,7 @@ class Logout extends State<LogoutPage> {
             ),
           ),
         )
-      ]
+      ] //children
     )
     );
   }
