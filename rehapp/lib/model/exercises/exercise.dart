@@ -8,16 +8,16 @@ class Exercise {
 
   Exercise({
     this.id = "",
-    this.description = "",
     this.name = "",
+    this.description = "",
     this.video = "",
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
       id: json["id"],
-      description: json["description"],
       name: json["name"],
+      description: json["description"],
       video: json["video"],
     );
   }

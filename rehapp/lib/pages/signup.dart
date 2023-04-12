@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rehapp/assets/constants.dart';
 import 'package:rehapp/api/api_service.dart';
-import 'package:rehapp/model/signup_model.dart';
-import 'package:rehapp/pages/login.dart';
-import 'package:rehapp/pages/verify.dart';
+import 'package:rehapp/model/users/patient.dart';
+import 'package:rehapp/model/users/therapist.dart';
 
 import '../ProgressHUD.dart';
 
@@ -18,15 +15,15 @@ class _SignupPageState extends State<SignupPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   GlobalKey<FormState> globalFormKey = GlobalKey<FormState>();
   bool hidePassword = true;
-  late SignupRequestModel requestModel;
+  Map<String, dynamic> userData = {};
+  String password = "";
   bool isApiCallProcess = false;
   bool isTherapist = false;
 
   @override
   void initState() {
     super.initState();
-    requestModel = SignupRequestModel();
-    requestModel.role = "patient";
+    userData["role"] = "patient";
   }
 
   @override
@@ -49,7 +46,8 @@ class _SignupPageState extends State<SignupPage> {
             child: Container(
                 width: double.infinity,
                 alignment: Alignment.topLeft,
-                child: BackButton()),
+                child: const BackButton()
+              ),
           ),
           Container(
             width: double.infinity,
@@ -62,8 +60,9 @@ class _SignupPageState extends State<SignupPage> {
                 boxShadow: [
                   BoxShadow(
                       color: Theme.of(context).hintColor.withOpacity(0.2),
-                      offset: Offset(0, 10),
-                      blurRadius: 20)
+                      offset: const Offset(0, 10),
+                      blurRadius: 20
+                    )
                 ]),
             child: Form(
               key: globalFormKey,
@@ -74,7 +73,7 @@ class _SignupPageState extends State<SignupPage> {
                 RichText(
                   text: TextSpan(
                     text: CREATE_AN_ACCOUNT,
-                    style: Theme.of(context).textTheme.headline2,
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
                 ),
                 const SizedBox(
@@ -83,7 +82,7 @@ class _SignupPageState extends State<SignupPage> {
                 TextFormField(
                   validator: (input) =>
                       input!.length > 1 ? null : FILL_OUT_NAME,
-                  onSaved: (input) => requestModel.firstName = input!,
+                  onSaved: (input) => userData["firstName"] = input!,
                   decoration: InputDecoration(
                     hintText: "First name",
                     enabledBorder: UnderlineInputBorder(
@@ -107,7 +106,7 @@ class _SignupPageState extends State<SignupPage> {
                 TextFormField(
                   validator: (input) =>
                       input!.length > 1 ? null : FILL_OUT_NAME,
-                  onSaved: (input) => requestModel.lastName = input!,
+                  onSaved: (input) => userData["lastName"] = input!,
                   decoration: InputDecoration(
                     hintText: "Last name",
                     enabledBorder: UnderlineInputBorder(
@@ -131,7 +130,7 @@ class _SignupPageState extends State<SignupPage> {
                 TextFormField(
                   validator: (input) =>
                       input!.contains("@") ? null : INVALID_EMAIL_MESSAGE,
-                  onSaved: (input) => requestModel.email = input!,
+                  onSaved: (input) => userData["email"] = input!,
                   decoration: InputDecoration(
                     hintText: "Email",
                     enabledBorder: UnderlineInputBorder(
@@ -154,7 +153,7 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 TextFormField(
                   keyboardType: TextInputType.text,
-                  onSaved: (input) => requestModel.password = input!,
+                  onSaved: (input) => password = input!,
                   validator: (input) =>
                       input!.length < 3 ? INVALID_PASSWORD_MESSAGE : null,
                   obscureText: hidePassword,
@@ -204,9 +203,9 @@ class _SignupPageState extends State<SignupPage> {
                             isTherapist = newValue;
                           });
                           if (!newValue) {
-                            requestModel.role = "patient";
+                            userData["role"] = "patient";
                           } else {
-                            requestModel.role = "therapist";
+                            userData["role"] = "therapist";
                           }
                         }),
                   ],
@@ -217,7 +216,6 @@ class _SignupPageState extends State<SignupPage> {
                         vertical: 12, horizontal: 80),
                     backgroundColor: Theme.of(context).colorScheme.secondary,
                     shape: const StadiumBorder(),
-                    primary: Colors.white,
                   ),
                   onPressed: () {
                     if (validateAndSave()) {
@@ -225,7 +223,10 @@ class _SignupPageState extends State<SignupPage> {
                         isApiCallProcess = true;
                       });
                       APIService apiService = APIService();
-                      apiService.signup(requestModel).then((value) {
+                      apiService.signup(
+                        password,
+                        (userData["role"] == "patient") ? Patient.fromJson(userData) : Therapist.fromJson(userData)
+                      ).then((value) {
                         setState(() {
                           isApiCallProcess = false;
                         });
@@ -235,7 +236,6 @@ class _SignupPageState extends State<SignupPage> {
                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         Navigator.pop(context);
                       }).catchError((onError) {
-                        print(onError);
                         setState(() {
                           isApiCallProcess = false;
                         });
@@ -258,7 +258,6 @@ class _SignupPageState extends State<SignupPage> {
   bool validateAndSave() {
     final form = globalFormKey.currentState;
     if (form!.validate()) {
-      print(requestModel);
       form.save();
       return true;
     }

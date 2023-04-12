@@ -1,10 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/pages/home.dart';
 import 'package:rehapp/pages/login.dart';
-import 'package:rehapp/pages/therapist_home.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -22,12 +22,13 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    APIService apiService = APIService();
     // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     //   statusBarColor: Colors.transparent,
     //   systemNavigationBarColor: Colors.transparent,
     // ));
     return MaterialApp(
-      title: 'Login',
+      title: 'Rehapp',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
           fontFamily: 'AtkinsonHyperlegible',
@@ -63,7 +64,11 @@ class MyApp extends StatelessWidget {
           systemNavigationBarIconBrightness: Brightness.dark,
           statusBarIconBrightness: Brightness.dark,
         ),
-        child: LoginPage(),
+        child: (FirebaseAuth.instance.currentUser != null) ? (
+          const HomePage()
+         ) : (
+          LoginPage()
+        )
       ),
     );
   }

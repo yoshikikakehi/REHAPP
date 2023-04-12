@@ -1,15 +1,13 @@
-class Assignment {
-  final String id;
-  final String patientId;
-  final String therapistId;
-  final String exerciseId;
-  final String exerciseName;
-  final int duration;
-  final List<String> frequency;
-  final String details;
+class AssignmentRequest {
+  String patientId;
+  String therapistId;
+  String exerciseId;
+  String exerciseName;
+  int duration;
+  List<String> frequency;
+  String details;
 
-  Assignment({
-    this.id = "",
+  AssignmentRequest({
     this.patientId = "",
     this.therapistId = "",
     this.exerciseId = "",
@@ -19,9 +17,8 @@ class Assignment {
     this.details = "",
   });
 
-  factory Assignment.fromJson(Map<String, dynamic> json) {
-    return Assignment(
-      id: json["id"],
+  factory AssignmentRequest.fromJson(Map<String, dynamic> json) {
+    return AssignmentRequest(
       patientId: json["patientId"],
       therapistId: json["therapistId"],
       exerciseId: json["exerciseId"],
@@ -34,7 +31,6 @@ class Assignment {
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> map = {
-      "id": id,
       "patientId": patientId,
       "therapistId": therapistId,
       "exerciseId": exerciseId,

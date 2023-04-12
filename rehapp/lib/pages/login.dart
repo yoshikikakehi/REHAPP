@@ -1,62 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/assets/constants.dart';
-import 'package:rehapp/main.dart';
-import 'package:rehapp/model/login_model.dart';
-import 'package:rehapp/pages/exercise.dart';
 import 'package:rehapp/pages/home.dart';
 import 'package:rehapp/pages/signup.dart';
-import 'package:rehapp/pages/therapist_home.dart';
-import 'package:rehapp/pages/assign_exercise.dart';
-import 'package:rehapp/pages/exercise_detail.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../ProgressHUD.dart';
 
 bool checked = false;
 
 class LoginPage extends StatefulWidget {
-  @override
-  _LoginPageState createState() => _LoginPageState();
+  const LoginPage({Key? key}) : super(key: key);
+  @override _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   GlobalKey<FormState> globalFormKey = GlobalKey<FormState>();
   bool hidePassword = true;
-  late LoginRequestModel requestModel;
   bool isApiCallProcess = false;
 
-  @override
-  void initState() {
-    super.initState();
-    requestModel = LoginRequestModel();
-    transferLogin();
-  }
+  String email = "";
+  String password = "";
 
-  void transferLogin() async {
-    if (FirebaseAuth.instance.currentUser != null) {
-      APIService apiService = APIService();
-      apiService.getCurrentUserData()
-        .then((userValue) {
-          if (userValue["role"] == "therapist") {
-            Future.delayed(Duration.zero, () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const TherapistHomePage()));
-            });
-          } else {
-            Future.delayed(Duration.zero, () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => HomePage()));
-            });
-          }
-        });
-    }
-  }
+  APIService apiService = APIService();
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
                 boxShadow: [
                   BoxShadow(
                       color: Theme.of(context).hintColor.withOpacity(0.2),
-                      offset: Offset(0, 10),
+                      offset: const Offset(0, 10),
                       blurRadius: 20)
                 ]),
             child: Form(
@@ -96,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                 RichText(
                   text: TextSpan(
                     text: LOGIN_TO,
-                    style: Theme.of(context).textTheme.headline2,
+                    style: Theme.of(context).textTheme.headlineMedium,
                     children: const <TextSpan>[
                       TextSpan(
                         text: APP_NAME,
@@ -109,9 +76,8 @@ class _LoginPageState extends State<LoginPage> {
                   height: 20,
                 ),
                 TextFormField(
-                  validator: (input) =>
-                      input!.contains("@") ? null : INVALID_EMAIL_MESSAGE,
-                  onSaved: (input) => requestModel.email = input!,
+                  validator: (input) => input!.contains("@") ? null : INVALID_EMAIL_MESSAGE,
+                  onSaved: (input) => setState(() => email = input!),
                   decoration: InputDecoration(
                     hintText: "Email",
                     enabledBorder: UnderlineInputBorder(
@@ -134,9 +100,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 TextFormField(
                   keyboardType: TextInputType.text,
-                  onSaved: (input) => requestModel.password = input!,
+                  onSaved: (input) => setState(() => password = input!),
                   validator: (input) =>
-                      input!.length < 3 ? INVALID_PASSWORD_MESSAGE : null,
+                      input!.length < 6 ? INVALID_PASSWORD_MESSAGE : null,
                   obscureText: hidePassword,
                   decoration: InputDecoration(
                     hintText: "Password",
@@ -178,40 +144,31 @@ class _LoginPageState extends State<LoginPage> {
                         vertical: 12, horizontal: 80),
                     backgroundColor: Theme.of(context).colorScheme.secondary,
                     shape: const StadiumBorder(),
-                    primary: Colors.white,
                   ),
                   onPressed: () {
                     if (validateAndSave()) {
                       setState(() {
                         isApiCallProcess = true;
                       });
-                      APIService apiService = APIService();
-                      apiService.login(requestModel).then((userCredential) async {
+                      apiService.login(email, password).then((userCredential) async {
                         setState(() {
                           isApiCallProcess = false;
                         });
                         if (userCredential.user != null) {
-                          apiService.getCurrentUserData()
-                            .then((userValue) {
+                          apiService.getCurrentUser()
+                            .then((user) {
                               const snackBar = SnackBar(
                                 content: Text(LOGIN_SUCCESS_SNACKBAR),
                               );
                               ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                              if (userValue["role"] == "therapist") {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => TherapistHomePage()));
-                              } else {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => HomePage()));
-                              }
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const HomePage())
+                              );
                             });
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Failure"),
-                            )
+                            const SnackBar(content: Text("Failure"))
                           );
                         }
                       }).catchError((onError) {
@@ -223,7 +180,6 @@ class _LoginPageState extends State<LoginPage> {
                         );
                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       });
-                      print(requestModel.toJson());
                     }
                   },
                   child: const Text(
@@ -233,7 +189,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                /* Container(
                   color: Colors.white,
-                  constraints: BoxConstraints(minWidth: 100, maxWidth: 200),
+                  constraints: const BoxConstraints(minWidth: 100, maxWidth: 200),
                   margin: const EdgeInsets.only(left: 20.0, right: 20.0),
                   alignment: Alignment.center,
                   child: Material(
@@ -254,24 +210,24 @@ class _LoginPageState extends State<LoginPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 10.0),
                   child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SignupPage()));
-                      },
-                      child: RichText(
-                        text: TextSpan(
-                          text: DONT_HAVE_ACCOUNT,
-                          style: Theme.of(context).textTheme.bodyText2,
-                          children: const <TextSpan>[
-                            TextSpan(
-                                text: CREATE_ONE_NOW,
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      )),
-
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SignupPage()));
+                    },
+                    child: RichText(
+                      text: TextSpan(
+                        text: DONT_HAVE_ACCOUNT,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        children: const <TextSpan>[
+                          TextSpan(
+                              text: CREATE_ONE_NOW,
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    )
+                  ),
                 ),
               ]),
             ),
@@ -284,7 +240,6 @@ class _LoginPageState extends State<LoginPage> {
   bool validateAndSave() {
     final form = globalFormKey.currentState;
     if (form!.validate()) {
-      print(requestModel);
       form.save();
       return true;
     }

@@ -1,29 +1,23 @@
-import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:rehapp/model/add_patient_model.dart';
-import 'package:rehapp/model/assign_exercise_model.dart';
-import 'package:rehapp/model/delete_exercise_model.dart';
-import 'package:rehapp/model/delete_patient_model.dart';
-import 'package:rehapp/model/exercise_bank_model.dart';
-import 'package:rehapp/model/exercise_feedback_model.dart';
-import 'package:rehapp/model/get_exercise_model.dart';
-import 'dart:convert';
+import 'package:rehapp/model/assignments/assignment_request.dart';
 
-import 'package:rehapp/model/login_model.dart';
-import 'package:rehapp/model/signup_model.dart';
-import 'package:rehapp/model/verify_model.dart';
-import 'package:rehapp/model/get_patient_model.dart';
+import 'package:rehapp/model/users/user.dart';
+import 'package:rehapp/model/users/patient.dart';
+import 'package:rehapp/model/users/therapist.dart';
+import 'package:rehapp/model/exercises/exercise.dart';
+import 'package:rehapp/model/assignments/assignment.dart';
+import 'package:rehapp/model/feedback/feedback.dart';
 
 class APIService {
   static FirebaseAuth auth = FirebaseAuth.instance;
   static FirebaseFirestore db = FirebaseFirestore.instance;
   
-  Future<UserCredential> login(LoginRequestModel requestModel) async {
+  Future<UserCredential> login(String email, String password) async {
     try {
       final UserCredential userCredential = await auth.signInWithEmailAndPassword(
-        email: requestModel.email.toLowerCase().trim(),
-        password: requestModel.password.trim()
+        email: email.toLowerCase().trim(),
+        password: password.trim()
       );
 
       return userCredential;
@@ -33,21 +27,21 @@ class APIService {
       } else if (e.code == 'wrong-password') {
         throw Exception('Wrong password provided for that user.');
       }
-      throw e;
+      rethrow;
     }
   }
 
-  Future<UserCredential> signup(SignupRequestModel requestModel) async {
+  Future<UserCredential> signup(String password, RehappUser user) async {
     try {
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-        email: requestModel.email.toLowerCase().trim(),
-        password: requestModel.password.trim()
+        email: user.email.toLowerCase().trim(),
+        password: password.trim()
       );
       
-      db.collection("users")
+      await db.collection("users")
         .doc(userCredential.user?.uid)
-        .set(requestModel.toJson())
-        .onError((e, _) => print("User already exists: $e"));
+        .set(user.toJson())
+        .onError((e, _) => throw Exception("User already exists: $e"));
 
       // await userCredential.user?.sendEmailVerification();
       return userCredential;
@@ -57,88 +51,97 @@ class APIService {
       } else if (e.code == 'email-already-in-use') {
         throw Exception('The account already exists for that email.');
       }
-      throw e;
+      rethrow;
     }
   }
 
-  Future<Map<String, dynamic>> getCurrentUserData() async {
-    Map<String, dynamic> curUser = {};
+  Future<RehappUser> getCurrentUser() async {
+    late final RehappUser curUser;
     await db.collection('users')
       .doc(auth.currentUser?.uid)
       .get()
       .then((DocumentSnapshot doc) async {
         final data = doc.data() as Map<String, dynamic>;
-        curUser = {
-          'firstName': data['firstName'],
-          'lastName': data['lastName'],
-          'email': data['email'],
-          'role': data['role']
-        };
-        if (curUser["role"] == "therapist") {
-          curUser["patients"] = data["patients"];
+        if (data["role"] == "therapist") {
+          curUser = Therapist(
+            id: doc.id,
+            firstName: data['firstName'],
+            lastName: data['lastName'],
+            email: data['email'],
+            role: data['role'],
+            patients: (data["patients"] as List).map((item) => item as String).toList()
+          );
         } else {
-          curUser["assignments"] = data["assignments"];
+          curUser = Patient(
+            id: doc.id,
+            firstName: data['firstName'],
+            lastName: data['lastName'],
+            email: data['email'],
+            role: data['role'],
+            assignments: data["assignments"] != null ? (data["assignments"] as List).map((item) => item as String).toList() : const []
+          );
         }
       });
       return curUser;
   }
 
-  Future<Map<String, dynamic>> getUserData(String id) async {
-    Map<String, dynamic> user = {};
+  Future<RehappUser> getUserData(String id) async {
+    late final RehappUser user;
     await db.collection('users')
       .doc(id)
       .get()
       .then((DocumentSnapshot doc) async {
         final data = doc.data() as Map<String, dynamic>;
-        user = {
-          'firstName': data['firstName'],
-          'lastName': data['lastName'],
-          'email': data['email'],
-          'role': data['role']
-        };
-        if (user["role"] == "therapist") {
-          user["patients"] = data["patients"];
+        if (data["role"] == "therapist") {
+          user = Therapist(
+            id: id,
+            firstName: data['firstName'],
+            lastName: data['lastName'],
+            email: data['email'],
+            role: data['role'],
+            patients: (data["patients"] as List).map((item) => item as String).toList()
+          );
         } else {
-          user["assignments"] = data["assignments"];
+          user = Patient(
+            id: id,
+            firstName: data['firstName'],
+            lastName: data['lastName'],
+            email: data['email'],
+            role: data['role'],
+            assignments: data["assignments"] != null ? (data["assignments"] as List).map((item) => item as String).toList() : const []
+          );
         }
       });
       return user;
   }
 
-  Future<List<dynamic>> getPatients(
-      List<dynamic> patientIds) async {
-    List<dynamic> patients = List.filled(patientIds.length, {
-      'id': "",
-      'firstName': "",
-      'lastName': "",
-      'email': "",
-      'assignments': List.filled(0, ""),
-      'role': "patient"
-    });
-    for(var i = 0 ; i < patientIds.length; i++ ) {
+  Future<List<Patient>> getPatients(
+      List<String> patientIds) async {
+    final List<Patient> patients = [];
+    for(var i = 0 ; i < patientIds.length; i++) {
       await db.collection("users")
         .doc(patientIds[i])
         .get()
         .then((DocumentSnapshot doc) {
           final data = doc.data() as Map<String, dynamic>;
-          patients[i] = {
-            'id': patientIds[i],
-            'firstName': data['firstName'],
-            'lastName': data['lastName'],
-            'email': data['email'],
-            'assignments': data['assignments'],
-            'role': data['role']
-          };
+          patients.add(Patient(
+            id: patientIds[i],
+            firstName: data['firstName'],
+            lastName: data['lastName'],
+            email: data['email'],
+            role: data['role'],
+            assignments: data["assignments"] != null ? (data["assignments"] as List).map((item) => item as String).toList() : const []
+          ));
         })
-        .onError((e, _) => throw Exception("User with inputted email was not found: $e"));
+        .onError((e, _) => throw Exception("User was not found: $e"));
     }
     return patients;
   }
 
-  Future<Map<String, dynamic>> addPatient(
+  Future<RehappUser> addPatient(
       String patientEmail,
       List<dynamic> patients) async {
-    Map<String, dynamic> patient = {};
+    late final RehappUser patient;
     await db.collection('users')
       .where('email', isEqualTo: patientEmail.toLowerCase().trim())
       .get()
@@ -156,14 +159,14 @@ class APIService {
         db.collection('users')
           .doc(auth.currentUser?.uid)
           .update({"patients": FieldValue.arrayUnion([doc.id])});
-        patient = {
-          'id': doc.id,
-          'firstName': data['firstName'],
-          'lastName': data['lastName'],
-          'email': data['email'],
-          'assignments': data['assignments'],
-          'role': data['role']
-        };
+        patient = Patient(
+          id: doc.id,
+          firstName: data['firstName'],
+          lastName: data['lastName'],
+          email: data['email'],
+          role: data['role'],
+          assignments: data["assignments"] != null ? (data["assignments"] as List).map((item) => item as String).toList() : const []
+        );
       });
       return patient;
   }
@@ -176,90 +179,59 @@ class APIService {
       .onError((e, _) => throw Exception("Patient could not be deleted: $e"));
   }
 
-  Future<List<dynamic>> getAssignments(
-     String patientId, String? therapistId) async {
-    List<dynamic> assignments = [];
-    if (therapistId == null) {
-      await db.collection("assignments")
-        .where("patientId", isEqualTo: patientId)
-        .get()
-        .then((QuerySnapshot query) {
-          List<DocumentSnapshot> docs = query.docs;
-          for (DocumentSnapshot doc in docs) {
-            final data = doc.data() as Map<String, dynamic>;
-            assignments.add({
-              'id': doc.id,
-              'exerciseId': data['exerciseId'],
-              'exerciseName': data['exerciseName'],
-              'patientId': data['patientId'],
-              'therapistId': data['therapistId'],
-              'frequency': data['frequency'],
-              'duration': data['duration'],
-              'completed': data['completed']
-            });
-          }
-        })
-        .onError((e, _) => throw Exception("Assignment with inputted email was not found: $e"));
-    } else {
-      await db.collection("assignments")
-        .where("patientId", isEqualTo: patientId)
-        .where("therapistId", isEqualTo: therapistId)
-        .get()
-        .then((QuerySnapshot query) {
-          List<DocumentSnapshot> docs = query.docs;
-          for (DocumentSnapshot doc in docs) {
-            final data = doc.data() as Map<String, dynamic>;
-            assignments.add({
-              'id': doc.id,
-              'exerciseId': data['exerciseId'],
-              'exerciseName': data['exerciseName'],
-              'patientId': data['patientId'],
-              'therapistId': data['therapistId'],
-              'frequency': data['frequency'],
-              'duration': data['duration'],
-              'completed': data['completed']
-            });
-          }
-        })
-        .onError((e, _) => throw Exception("Assignment with inputted email was not found: $e"));
-    }
-    print(assignments);
+  Future<List<Assignment>> getAssignments(
+     String patientId) async {
+    final List<Assignment> assignments = [];
+    await db.collection("assignments")
+      .where("patientId", isEqualTo: patientId)
+      .get()
+      .then((QuerySnapshot query) {
+        List<DocumentSnapshot> docs = query.docs;
+        for (DocumentSnapshot doc in docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          assignments.add(Assignment(
+            id: doc.id,
+            patientId: data['patientId'],
+            therapistId: data['therapistId'],
+            exerciseId: data['exerciseId'],
+            exerciseName: data['exerciseName'],
+            frequency: data["frequency"] != null ? (data["frequency"] as List).map((item) => item as String).toList() : const [],
+            duration: data['duration'],
+            details: data['details'],
+          ));
+        }
+      })
+      .onError((e, _) => throw Exception(e));
     return assignments;
   }
 
-  // Future<Map<String, dynamic>> createAssignment(
-  //     String patientId,
-      
-  //   ) async {
-  //   Map<String, dynamic> patient = {};
-  //   await db.collection('users')
-  //     .where('email', isEqualTo: patientEmail.toLowerCase().trim())
-  //     .get()
-  //     .then((QuerySnapshot query) async {
-  //       if (query.size == 0 ) {
-  //         throw Exception("Data was not found");
-  //       }
-  //       final doc = query.docs.elementAt(0);
-  //       final data = doc.data() as Map<String, dynamic>;
-  //       if (data["role"] != "patient") {
-  //         throw Exception('User with email ' + patientEmail.toLowerCase().trim() + ' is not a patient');
-  //       } else if (patients.contains(doc.id)) {
-  //         throw Exception('Patient with email ' + patientEmail.toLowerCase().trim() + ' is already added');
-  //       }
-  //       db.collection('users')
-  //         .doc(auth.currentUser?.uid)
-  //         .update({"patients": FieldValue.arrayUnion([doc.id])});
-  //       patient = {
-  //         'id': doc.id,
-  //         'firstName': data['firstName'],
-  //         'lastName': data['lastName'],
-  //         'email': data['email'],
-  //         'assignments': data['assignments'],
-  //         'role': data['role']
-  //       };
-  //     });
-  //     return patient;
-  // }
+  Future<Assignment> createAssignment(
+      AssignmentRequest assignmentData
+    ) async {
+    late final Assignment assignment;
+    await db.collection("assignments")
+        .add(assignmentData.toJson())
+        .then((DocumentReference docRef) async {
+          await docRef.get().then((DocumentSnapshot doc) async {
+            await db.collection("users")
+              .doc(assignmentData.patientId)
+              .update({"assignments": FieldValue.arrayUnion([doc.id])});
+            final data = doc.data() as Map<String, dynamic>;
+            assignment = Assignment(
+              id: doc.id,
+              patientId: data['patientId'],
+              therapistId: data['therapistId'],
+              exerciseId: data['exerciseId'],
+              exerciseName: data['exerciseName'],
+              frequency: data["frequency"] != null ? (data["frequency"] as List).map((item) => item as String).toList() : const [],
+              duration: data['duration'],
+              details: data['details'],
+            );
+          });
+        })
+        .onError((e, _) => throw Exception("User already exists: $e"));
+      return assignment;
+  }
 
   Future<void> deleteAssignment(
       String patientId,
@@ -276,107 +248,66 @@ class APIService {
       .onError((e, _) => throw Exception("Assignment could not be deleted from patient's assignments: $e"));
   }
 
-// ALL OLD API SERVICES BELOW:
-// TODO: Refactor all below API services to utilize Firebase
-  Future<GetExerciseResponseModel> getExercises(String patientEmail) async {
-    String url =
-        "https://rehapp.azurewebsites.net/therapist/getPatientAssignments?PatientEmail=${patientEmail}";
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
-      return GetExerciseResponseModel.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to load Data');
-    }
+  Future<Exercise> getExercise(
+      String exerciseId) async {
+    late Exercise exercise;
+    await db.collection('exercises')
+      .doc(exerciseId)
+      .get()
+      .then((DocumentSnapshot doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        exercise = Exercise(
+          id: doc.id,
+          name: data['name'],
+          description: data['description'],
+          video: data['video'],
+        );
+      })
+      .onError((e, _) => throw Exception("Assignment could not be deleted from patient's assignments: $e"));
+    return exercise;
   }
 
-  Future<GetExerciseResponseModel> getMyExercises() async {
-    String url =
-        "https://rehapp.azurewebsites.net/patient/getAssignedExercises";
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
-      return GetExerciseResponseModel.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to load Data');
-    }
+  Future<List<Exercise>> getExercises() async {
+    List<Exercise> exercises = [];
+    await db.collection('exercises')
+      .get()
+      .then((QuerySnapshot query) {
+        List<DocumentSnapshot> docs = query.docs;
+        for (DocumentSnapshot doc in docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          exercises.add(
+            Exercise(
+              id: doc.id,
+              name: data['name'],
+              description: data['description'],
+              video: data['video'],
+            )
+          );
+        }
+      })
+      .onError((e, _) => throw Exception(e));
+    return exercises;
   }
 
-  Future<AssignExerciseResponseModel> assignExercises(
-      AssignExerciseRequestModel requestModel) async {
-    String url =
-        "https://rehapp.azurewebsites.net/therapist/createPatientAssignment";
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode(requestModel),
-    );
-    print(jsonEncode(requestModel));
-    if (response.statusCode == 200) {
-      return AssignExerciseResponseModel.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to load Data');
-    }
-  }
-
-  Future<DeleteExerciseResponseModel> deleteExercises(
-      DeleteExerciseRequestModel requestModel) async {
-    String url =
-        "https://rehapp.azurewebsites.net/therapist/deletePatientAssignment";
-    final response = await http.delete(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode(requestModel),
-    );
-    print(response.statusCode);
-    if (response.statusCode == 200) {
-      return DeleteExerciseResponseModel.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to load Data');
-    }
-  }
-
-  Future<ExerciseFeedbackResponseModel> sendFeedback(
-      ExerciseFeedbackRequestModel requestModel) async {
-    String url = "https://rehapp.azurewebsites.net/patient/createExerciseNote";
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode(requestModel),
-    );
-    if (response.statusCode == 200) {
-      return ExerciseFeedbackResponseModel.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to load Data');
-    }
-  }
-
-  Future<ExerciseBankResponseModel> getExerciseBank() async {
-    String url = "https://rehapp.azurewebsites.net/ExerciseBank";
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
-      return ExerciseBankResponseModel.fromJson(json.decode(response.body));
-    } else {
-      throw Exception('Failed to load Data');
-    }
+  Future<PatientFeedback> createFeedback(
+      PatientFeedback feedbackData) async {
+    late final PatientFeedback feedback;
+    await db.collection("feedback")
+        .add(feedbackData.toJson())
+        .then((DocumentReference docRef) {
+          docRef.get().then((DocumentSnapshot doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            feedback = PatientFeedback(
+              id: doc.id,
+              assignmentId: data["assignmentId"],
+              date: data["date"],
+              difficulty: data["difficulty"],
+              duration: data["duration"],
+              comments: data["comments"],
+            );
+          });
+        })
+        .onError((e, _) => throw Exception("User already exists: $e"));
+    return feedback;
   }
 }
