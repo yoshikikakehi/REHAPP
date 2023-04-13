@@ -1,11 +1,9 @@
 // import 'package:flutter/material.dart';
+// import 'package:rehapp/ProgressHUD.dart';
 // import 'package:rehapp/api/api_service.dart';
 // import 'package:rehapp/assets/constants.dart';
-// import 'package:rehapp/model/exercise_feedback_model.dart';
-// import 'package:rehapp/model/exercises/exercise.dart';
-// import 'package:rehapp/pages/home.dart';
-
-// import '../ProgressHUD.dart';
+// import 'package:rehapp/model/assignments/assignment.dart';
+// import 'package:rehapp/model/assignments/assignment_request.dart';
 
 // class FeedbackPage extends StatefulWidget {
 //   final Assignment assignment;
@@ -21,14 +19,10 @@
 // class FeedbackPageState extends State<FeedbackPage> {
 //   final _formKey = GlobalKey<FormState>();
 //   bool isApiCallProcess = false;
-//   bool _radioError = false;
-//   //int _value = 1; //difficulty radio buttons value
 
 //   @override
 //   void initState() {
 //     super.initState();
-//     requestModel =
-//         ExerciseFeedbackRequestModel(exerciseID: widget.exercise.id);
 //   }
 
 //   @override
@@ -40,12 +34,10 @@
 //     );
 //   }
 
-//   int _value = 0; //difficulty radio buttons value
-
 //   Widget _uiSetup(BuildContext context) {
 //     return Scaffold(
 //       appBar: AppBar(
-//         title: Text('Notes on ${widget.exercise.name}'),
+//         title: Text('Notes on ${widget.assignment.exerciseName}'),
 //       ),
 //       body: Builder(builder: (context) {
 //         return SingleChildScrollView(

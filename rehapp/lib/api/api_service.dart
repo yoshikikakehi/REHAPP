@@ -152,9 +152,9 @@ class APIService {
         final doc = query.docs.elementAt(0);
         final data = doc.data() as Map<String, dynamic>;
         if (data["role"] != "patient") {
-          throw Exception('User with email ' + patientEmail.toLowerCase().trim() + ' is not a patient');
+          throw Exception('User with email ${patientEmail.toLowerCase().trim()} is not a patient');
         } else if (patients.contains(doc.id)) {
-          throw Exception('Patient with email ' + patientEmail.toLowerCase().trim() + ' is already added');
+          throw Exception('Patient with email ${patientEmail.toLowerCase().trim()} is already added');
         }
         db.collection('users')
           .doc(auth.currentUser?.uid)

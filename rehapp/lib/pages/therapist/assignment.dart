@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/assignments/assignment.dart';
 import 'package:rehapp/model/exercises/exercise.dart';
-import '../../ProgressHUD.dart';
 
 class AssignmentPage extends StatefulWidget {
   final Assignment assignment;
@@ -54,9 +54,9 @@ class _AssignmentPageState extends State<AssignmentPage> {
   @override
   Widget build(BuildContext context) {
     return ProgressHUD(
-      child: _uiSetup(context),
       inAsyncCall: isApiCallProcess,
       opacity: 0.3,
+      child: _uiSetup(context),
     );
   }
 

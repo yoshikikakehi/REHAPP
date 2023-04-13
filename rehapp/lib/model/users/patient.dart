@@ -8,18 +8,18 @@ class Patient extends RehappUser {
     super.email = "",
     super.firstName = "",
     super.lastName = "",
-    super.role = "",
+    super.role = "patient",
     this.assignments = const [],
   });
   
   factory Patient.fromJson(Map<String, dynamic> json) {
     return Patient(
-      id: json["id"],
-      email: json["email"],
-      firstName: json["firstName"],
-      lastName: json["lastName"],
-      role: json["role"],
-      assignments: (json["assignments"] as List).map((item) => item as String).toList(),
+      id: json["id"] ?? "",
+      email: json["email"] ?? "",
+      firstName: json["firstName"] ?? "",
+      lastName: json["lastName"] ?? "",
+      role: json["role"] ?? "patient",
+      assignments: (json["patients"] != null) ? (json["assignments"] as List).map((item) => item as String).toList() : const [],
     );
   }
   

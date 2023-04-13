@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/assignments/assignment.dart';
 import 'package:rehapp/model/users/patient.dart';
 import 'package:rehapp/pages/therapist/assign_exercise.dart';
 import 'package:rehapp/pages/therapist/assignment.dart';
 
-import '../../ProgressHUD.dart';
 
 class AssignmentsListPage extends StatefulWidget {
   final Patient patient;
-
   const AssignmentsListPage({Key? key, required this.patient}) : super(key: key);
-
-  @override
-  _AssignmentsListPageState createState() => _AssignmentsListPageState();
+  @override State<AssignmentsListPage> createState() => _AssignmentsListPageState();
 }
 
 class _AssignmentsListPageState extends State<AssignmentsListPage> {
@@ -28,8 +25,6 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
 
   List<Assignment> assignments = [];
   List<Assignment> displayedAssignments = [];
-
-  int selectedPage = 1;
 
   @override
   void initState() {
@@ -73,16 +68,29 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
     }
   }
 
-  String codeDialog = "";
-  String valueText = "";
-
   @override
   Widget build(BuildContext context) {
     return ProgressHUD(
-      child: _uiSetup(context),
       inAsyncCall: isApiCallProcess,
       opacity: 0.3,
+      child: _uiSetup(context),
     );
+  }
+
+  Future<void> navigateAndAddAssignment(BuildContext context) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AssignExercisePage(patient: widget.patient)),
+    );
+
+    if (!mounted) return;
+
+    assignments.add(result);
+    displayedAssignments.add(result);
+    
+    ScaffoldMessenger.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(const SnackBar(content: Text('Assignment created!')));
   }
 
   Widget _uiSetup(BuildContext context) {
@@ -107,12 +115,7 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
               IconButton(
                 splashRadius: 25,
                 iconSize: 30,
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AssignExercisePage(patient: widget.patient),
-                  )
-                ),
+                onPressed: () => navigateAndAddAssignment(context),
                 icon: const Icon(
                   Icons.add_circle_outline_rounded,
                   color: Colors.black

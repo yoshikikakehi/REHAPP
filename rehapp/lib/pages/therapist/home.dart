@@ -13,8 +13,7 @@ class TherapistHomePage extends StatefulWidget {
   final ValueChanged<Patient> onPush;
   const TherapistHomePage({Key? key, required this.buildContext, required this.user, required this.onPush}) : super(key: key);
 
-  @override
-  _TherapistHomePageState createState() => _TherapistHomePageState();
+  @override State<TherapistHomePage> createState() => _TherapistHomePageState();
 }
 
 class _TherapistHomePageState extends State<TherapistHomePage> {
@@ -22,7 +21,6 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
   final ScrollController _controller = ScrollController();
   final TextEditingController _textFieldController = TextEditingController();
   bool isApiCallProcess = true;
-  int selectedPage = 1;
 
   APIService apiService = APIService();
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -57,7 +55,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
     if (query.isNotEmpty) {
       List<Patient> filteredPatients = [];
       for (var patient in patients) {
-        String fullName = patient.firstName + " " + patient.lastName;
+        String fullName = "${patient.firstName} ${patient.lastName}";
         if (fullName.toLowerCase().contains(query.toLowerCase())) {
           filteredPatients.add(patient);
         }
@@ -141,9 +139,9 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
   @override
   Widget build(BuildContext context) {
     return ProgressHUD(
-      child: _uiSetup(context),
       inAsyncCall: isApiCallProcess,
       opacity: 0.3,
+      child: _uiSetup(context),
     );
   }
 
@@ -165,7 +163,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            "Hi " + widget.user.firstName,
+                            "Hi ${widget.user.firstName}",
                             style: const TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold
@@ -306,7 +304,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                   splashColor: Colors.blue.withAlpha(30),
                                   onTap: () => widget.onPush(displayedPatients.elementAt(index)),
                                   child: ListTile(
-                                    title: Text(displayedPatients.elementAt(index).firstName + " " + displayedPatients.elementAt(index).lastName),
+                                    title: Text("${displayedPatients.elementAt(index).firstName} ${displayedPatients.elementAt(index).lastName}"),
                                     subtitle: Text(displayedPatients.elementAt(index).email),
                                     leading: const SizedBox(
                                       height: double.infinity,

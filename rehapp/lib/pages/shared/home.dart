@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/users/therapist.dart';
 import 'package:rehapp/model/users/user.dart';
 import 'package:rehapp/pages/patient/tab_navigator.dart';
-import 'package:rehapp/pages/profile.dart';
-import 'package:rehapp/pages/patient/home.dart';
+import 'package:rehapp/pages/shared/profile.dart';
 import 'package:rehapp/pages/therapist/tab_navigator.dart';
-
-import '../../ProgressHUD.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -36,9 +34,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return ProgressHUD(
-      child: _uiSetup(context),
       inAsyncCall: false,
       opacity: 0.3,
+      child: _uiSetup(context),
     );
   }
 

@@ -1,12 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/assignments/assignment.dart';
 import 'package:rehapp/model/users/patient.dart';
-import 'package:rehapp/pages/patient/assignment.dart';
 
-import '../../ProgressHUD.dart';
 
 class PatientHomePage extends StatefulWidget {
   final BuildContext buildContext;
@@ -60,9 +59,9 @@ class _PatientHomePageState extends State<PatientHomePage> {
   @override
   Widget build(BuildContext context) {
     return ProgressHUD(
-      child: _uiSetup(context),
       inAsyncCall: isApiCallProcess,
       opacity: 0.3,
+      child: _uiSetup(context),
     );
   }
 

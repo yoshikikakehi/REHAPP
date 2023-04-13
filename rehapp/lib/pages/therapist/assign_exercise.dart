@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/assets/constants.dart';
 import 'package:rehapp/model/assignments/assignment_request.dart';
 import 'package:rehapp/model/exercises/exercise.dart';
 import 'package:rehapp/model/users/patient.dart';
-import '../../ProgressHUD.dart';
 
 class AssignExercisePage extends StatefulWidget {
   final Patient patient;
@@ -57,9 +57,9 @@ class AssignExercisePageState extends State<AssignExercisePage> {
   @override
   Widget build(BuildContext context) {
     return ProgressHUD(
-      child: _uiSetup(context),
       inAsyncCall: isApiCallProcess,
       opacity: 0.3,
+      child: _uiSetup(context),
     );
   }
 
@@ -126,13 +126,6 @@ class AssignExercisePageState extends State<AssignExercisePage> {
                 child: const Text('Exercise Description', style: TextStyle(fontSize: 16)),
               ),
               Container(
-                child: Text(
-                  selectedExercise?.description ?? 'Description of the selected exercise',
-                  style: const TextStyle(
-                    color: Color.fromARGB(255, 115, 115, 115),
-                    fontSize: 16
-                  ),
-                ),
                 width: double.infinity,
                 padding: const EdgeInsets.all(10.0),
                 decoration: BoxDecoration(
@@ -140,6 +133,13 @@ class AssignExercisePageState extends State<AssignExercisePage> {
                   borderRadius: BorderRadius.circular(5.0),
                   border: const Border.fromBorderSide(
                     BorderSide(color: Colors.grey, width: 1.0),
+                  ),
+                ),
+                child: Text(
+                  selectedExercise?.description ?? 'Description of the selected exercise',
+                  style: const TextStyle(
+                    color: Color.fromARGB(255, 115, 115, 115),
+                    fontSize: 16
                   ),
                 ),
               ),
@@ -222,13 +222,12 @@ class AssignExercisePageState extends State<AssignExercisePage> {
                   });
                   if (validateAndSave()) {
                     requestModel.patientId = widget.patient.id;
-                    Navigator.pop(context, requestModel);
                     apiService.createAssignment(requestModel)
                       .then((value) {
                         setState(() {
                           isApiCallProcess = false;
                         });
-                        Navigator.pop(context);
+                        Navigator.pop(context, value);
                       }).catchError((error) {
                         const snackBar = SnackBar(
                           content: Text("Assigning exercises failed"),
