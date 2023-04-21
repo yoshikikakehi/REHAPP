@@ -2,16 +2,18 @@ class PatientFeedback {
   final String id;
   final String assignmentId;
   final String date;
-  final String difficulty;
-  final String duration;
+  final int difficulty;
+  final int duration;
+  final int rating;
   final String comments;
 
   PatientFeedback({
     this.id = "",
     this.assignmentId = "",
     this.date = "",
-    this.difficulty = "",
-    this.duration = "",
+    this.difficulty = 0,
+    this.duration = 0,
+    this.rating = 0,
     this.comments = "",
   });
 
@@ -22,6 +24,7 @@ class PatientFeedback {
       date: json["date"],
       difficulty: json["difficulty"],
       duration: json["duration"],
+      rating: json["rating"],
       comments: json["comments"],
     );
   }
@@ -33,6 +36,7 @@ class PatientFeedback {
       "date": date,
       "difficulty": difficulty,
       "duration": duration,
+      "rating": rating,
       "comments": comments,
     };
     return map;

@@ -10,8 +10,6 @@ class ForgotPasswordPage extends StatefulWidget {
   @override State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
-bool checked = false;
-
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   GlobalKey<FormState> globalFormKey = GlobalKey<FormState>();
   bool hidePassword = true;
@@ -44,16 +42,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
           Container(
-            margin: const EdgeInsets.only(top: 23),
+            margin: const EdgeInsets.only(top: 48),
             padding: const EdgeInsets.symmetric(horizontal: 30),
             width: double.infinity,
-            alignment: Alignment.topLeft,
+            alignment: Alignment.centerLeft,
             child: const BackButton()
           ),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-            margin: const EdgeInsets.symmetric(vertical: 23, horizontal: 20),
+            margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Theme.of(context).primaryColor,

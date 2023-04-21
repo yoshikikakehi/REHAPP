@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/users/therapist.dart';
 import 'package:rehapp/model/users/user.dart';
@@ -16,40 +14,57 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  APIService apiService = APIService();
   final navigatorKey = GlobalKey<NavigatorState>();
+  APIService apiService = APIService();
   RehappUser? user;
+  Image? image;
   int selectedIndex = 0;
 
   @override
   void initState() {
-    apiService.getCurrentUser().then((userValue) {
-      setState(() {
-        user = userValue;
+    apiService
+      .getCurrentUser()
+      .then((userValue) {
+        setState(() {
+          user = userValue;
+          image = Image.network(
+            user!.profileImage!,
+            width: 115,
+            height: 115,
+            fit: BoxFit.fill,
+          );
+        });
       });
-    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ProgressHUD(
-      inAsyncCall: false,
-      opacity: 0.3,
-      child: _uiSetup(context),
-    );
+    return _uiSetup(context);
   }
 
-  void onTap(int index) {
+  void onTap(int index) async {
     setState(() {
       selectedIndex = index;
     });
   }
 
+  Future<void> updateUser(newImage) async {
+    await apiService
+      .getCurrentUser()
+      .then((userValue) {
+        setState(() {
+          user = userValue;
+          if (newImage != null) image = newImage;
+        });
+      });
+  }
+
   Widget _uiSetup(BuildContext context) {
     return (user == null) ? (
-      const Center(
-        child: CircularProgressIndicator(),
+      Container(
+        color: Colors.white,
+        child: const Center(child: CircularProgressIndicator()),
       )
     ) : (user!.role == "patient") ? (
       Scaffold(
@@ -69,7 +84,11 @@ class _HomePageState extends State<HomePage> {
             navigatorKey: navigatorKey
           )
         ) : (
-          ProfilePage(user: user!)
+          ProfilePage(
+            user: user!,
+            image: image!,
+            updateUser: updateUser
+          )
         )
       )
     ) : (
@@ -92,7 +111,11 @@ class _HomePageState extends State<HomePage> {
             navigatorKey: navigatorKey,
           )
         ) : (
-          ProfilePage(user: user!)
+          ProfilePage(
+            user: user!,
+            image: image!,
+            updateUser: updateUser
+          )
         )
       )
     );

@@ -7,13 +7,15 @@ class PatientTabNavigator extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   const PatientTabNavigator({super.key, required this.navigatorKey});
 
-  void _push(BuildContext context, Assignment assignment) {
+  Future<Assignment?> _push(BuildContext context, Assignment assignment) async {
     var routeBuilders = _routeBuilders(context, assignment);
 
-    Navigator.push(
+    final updatedAssignment = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => routeBuilders["/assignment"]!(context))
     );
+
+    return updatedAssignment;
   }
 
   Map<String, WidgetBuilder> _routeBuilders(BuildContext context, Assignment assignment) {

@@ -8,17 +8,17 @@ import 'package:rehapp/model/assignments/assignment_request.dart';
 import 'package:rehapp/model/exercises/exercise.dart';
 import 'package:rehapp/model/users/patient.dart';
 
-class AssignExercisePage extends StatefulWidget {
+class EditAssignmentPage extends StatefulWidget {
   final Patient patient;
-  const AssignExercisePage({Key? key, required this.patient}) : super(key: key);
+  const EditAssignmentPage({Key? key, required this.patient}) : super(key: key);
 
   @override
-  AssignExercisePageState createState() {
-    return AssignExercisePageState();
+  EditAssignmentPageState createState() {
+    return EditAssignmentPageState();
   }
 }
 
-class AssignExercisePageState extends State<AssignExercisePage> {
+class EditAssignmentPageState extends State<EditAssignmentPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   Exercise? selectedExercise;
   TextEditingController descriptionController = TextEditingController(text: "Description of the selected exercise");

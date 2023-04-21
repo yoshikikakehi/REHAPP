@@ -38,7 +38,6 @@ dependencies:
   flutter_svg: ^2.0.5
   crypto: ^3.0.1
   shared_preferences: ^2.0.13
-  flutter_phoenix: ^1.0.0
   firebase_core: ^2.5.0
   firebase_auth: ^4.2.6
   firebase_storage: ^11.1.0
@@ -46,6 +45,9 @@ dependencies:
   intl: ^0.17.0
   youtube_player_flutter: ^8.0.0
   flutter_inappwebview: ^5.7.2+3
+  image_picker: ^0.8.7+3
+  flutter_multi_formatter: ^2.10.2
+  image_cropper: ^3.0.2
 
 dev_dependencies:
   flutter_test:

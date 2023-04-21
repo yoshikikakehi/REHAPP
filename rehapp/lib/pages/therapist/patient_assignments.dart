@@ -37,6 +37,7 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
           isApiCallProcess = false;
         });
       }).catchError((error) {
+        print(error.toString());
         const snackBar = SnackBar(
           content: Text("Loading exercises failed"),
         );
@@ -85,12 +86,15 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
 
     if (!mounted) return;
 
-    assignments.add(result);
-    displayedAssignments.add(result);
-    
-    ScaffoldMessenger.of(context)
-      ..removeCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Assignment created!')));
+    if (result != null) {
+      setState(() {
+        assignments.add(result);
+        displayedAssignments.add(result);
+      });
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text('Assignment created!')));
+    }
   }
 
   Widget _uiSetup(BuildContext context) {
@@ -129,7 +133,7 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
         children: <Widget>[
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(10.0),
               child: Column(children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10.0),
@@ -164,8 +168,7 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
                         const snackBar = SnackBar(
                           content: Text("Loading exercises failed"),
                         );
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(snackBar);
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       });
                     },
                     child: assignments.isEmpty ? Container(
@@ -187,8 +190,7 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
                         )
                       ),
                     ) : ListView.builder(
-                        physics: const BouncingScrollPhysics(
-                            parent: AlwaysScrollableScrollPhysics()),
+                        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                         controller: _controller,
                         itemCount: displayedAssignments.length,
                         itemBuilder: (context, index) {
@@ -197,33 +199,7 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
                             child: Padding(
                               padding: const EdgeInsets.all(5.0),
                               child: (displayedAssignments.elementAt(index).therapistId == FirebaseAuth.instance.currentUser!.uid) ? 
-                                Card(
-                                  margin: EdgeInsets.zero,
-                                  color: Colors.grey[100],
-                                  child: InkWell(
-                                    splashColor:Colors.blue.withAlpha(30),
-                                    onTap: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => AssignmentPage(
-                                          assignment: assignments.elementAt(index),
-                                        ),
-                                      ),
-                                    ),
-                                    child: ListTile(
-                                      title: Text(displayedAssignments.elementAt(index).exerciseName),
-                                      subtitle: Text(displayedAssignments.elementAt(index).frequency.join(', ')),
-                                      leading: const SizedBox(
-                                        height: double.infinity,
-                                        child: Icon(
-                                          Icons.check_circle_outline_rounded,
-                                          color: Colors.black,
-                                          size: 25,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ) : Dismissible(
+                                Dismissible(
                                   key: Key(displayedAssignments.elementAt(index).id),
                                   background: Container(
                                     alignment: AlignmentDirectional.centerEnd,
@@ -280,6 +256,7 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => AssignmentPage(
+                                            patient: widget.patient,
                                             assignment: assignments.elementAt(index),
                                           ),
                                         ),
@@ -290,10 +267,37 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
                                         leading: const SizedBox(
                                           height: double.infinity,
                                           child: Icon(
-                                            Icons.check_circle_outline_rounded,
+                                            Icons.content_paste,
                                             color: Colors.black,
                                             size: 25,
                                           ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ) : Card(
+                                  margin: EdgeInsets.zero,
+                                  color: Colors.grey[100],
+                                  child: InkWell(
+                                    splashColor:Colors.blue.withAlpha(30),
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AssignmentPage(
+                                          patient: widget.patient,
+                                          assignment: assignments.elementAt(index),
+                                        ),
+                                      ),
+                                    ),
+                                    child: ListTile(
+                                      title: Text(displayedAssignments.elementAt(index).exerciseName),
+                                      subtitle: Text(displayedAssignments.elementAt(index).frequency.join(', ')),
+                                      leading: const SizedBox(
+                                        height: double.infinity,
+                                        child: Icon(
+                                          Icons.check_circle_outline_rounded,
+                                          color: Colors.black,
+                                          size: 25,
                                         ),
                                       ),
                                     ),
@@ -306,7 +310,7 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
                 ),
               ]),
             ),
-          ),
+          )
         ],
       )
     );

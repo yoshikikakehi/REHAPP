@@ -11,7 +11,6 @@ class VerifyEmailPage extends StatefulWidget {
 
 class _VerifyEmailPageState extends State<VerifyEmailPage> {
   FirebaseAuth auth = FirebaseAuth.instance;
-  bool isEmailVerified = false;
   bool canResendEmail = false;
   Timer? timer;
 
@@ -20,8 +19,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     super.initState();
 
     //user needs to be created before!
-    isEmailVerified = auth.currentUser!.emailVerified;
-    if (!isEmailVerified) {
+    if (!auth.currentUser!.emailVerified) {
       sendVerificationEmail();
 
       timer = Timer.periodic(
@@ -40,11 +38,18 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   Future checkEmailVerified() async {
     //call after email verification!
     await auth.currentUser!.reload();
-    setState(() {
-      isEmailVerified = auth.currentUser!.emailVerified;
-    });
 
-    if (isEmailVerified) timer?.cancel();
+    if (auth.currentUser!.emailVerified) {
+      timer?.cancel();
+      if (mounted) {
+        const snackBar = SnackBar(content: Text("Login Successful"));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => widget.nextPage),
+          (route) => false
+        );
+      }
+    }
   }
 
   Future<void> sendVerificationEmail() async {
@@ -56,33 +61,36 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
       await Future.delayed(const Duration(seconds: 5));
       setState(() => canResendEmail = true);
     } catch (e) {
-      const snackBar = SnackBar(
-        content: Text("Email Verification Error"),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      print(e);
     }
   }
 
   @override
-  Widget build(BuildContext context) => (isEmailVerified) ? (
-      widget.nextPage
-    ) : Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       backgroundColor: Theme.of(context).colorScheme.secondary,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Container(
-              margin: const EdgeInsets.only(top: 23),
+              margin: const EdgeInsets.only(top: 48),
               padding: const EdgeInsets.symmetric(horizontal: 30),
               width: double.infinity,
-              alignment: Alignment.topLeft,
-              child: const BackButton()
+              alignment: Alignment.centerLeft,
+              child: BackButton(
+                onPressed: () async {
+                  timer?.cancel();
+                  await FirebaseAuth.instance.signOut()
+                    .then((_) {
+                      Navigator.pop(context);
+                    });
+                },
+              )
             ),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-              margin: const EdgeInsets.symmetric(vertical: 23, horizontal: 20),
+              padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
+              margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 color: Theme.of(context).primaryColor,
@@ -96,18 +104,21 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
               ),
               child: Column(
                 children: <Widget>[
-                  const Text(
-                    "Please verify your email through the link sent to your email",
-                    style: TextStyle(fontSize: 20),
-                    textAlign: TextAlign.center,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    child: const Text(
+                      "Please verify your email through the link sent to your email",
+                      style: TextStyle(fontSize: 20),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 //------Resend Email BUTTON------------
                   const SizedBox(
-                    height: 20,
+                    height: 30,
                   ),
                   TextButton(
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 80),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 40),
                       foregroundColor: Colors.white,
                       backgroundColor: Theme.of(context).colorScheme.secondary,
                       shape: const StadiumBorder(),
@@ -119,24 +130,6 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                     ),
                   ),
                   //---------end resend email button-----------
-                  //------ Cancel BUTTON------------
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 80),
-                      backgroundColor: Theme.of(context).colorScheme.secondary,
-                      shape: const StadiumBorder(),
-                    ),
-                    onPressed: () => auth.signOut(),
-                    child: const Text(
-                      "Cancel",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  //---------end cancel button-----------
                 ],
               ),
             )

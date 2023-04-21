@@ -3,7 +3,7 @@
 // Login Screen
 const String LOGIN_TO = 'Login to ';
 const String APP_NAME = 'Rehapp';
-const String INVALID_EMAIL_MESSAGE = 'Email is invalid';
+const String INVALID_EMAIL_MESSAGE = 'Please enter an email address';
 const String INVALID_PASSWORD_MESSAGE = 'Password must be at least 6 characters';
 const String LOGIN_SUCCESS_SNACKBAR = 'Login Successful';
 const String LOGIN_BUTTON_TEXT = 'Login';

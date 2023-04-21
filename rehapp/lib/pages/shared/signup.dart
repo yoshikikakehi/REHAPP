@@ -4,6 +4,7 @@ import 'package:rehapp/assets/constants.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/users/patient.dart';
 import 'package:rehapp/model/users/therapist.dart';
+import 'package:rehapp/model/users/user_request.dart';
 import 'package:rehapp/pages/shared/login.dart';
 import 'package:rehapp/pages/shared/verify_email.dart';
 
@@ -15,7 +16,7 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   GlobalKey<FormState> globalFormKey = GlobalKey<FormState>();
   bool hidePassword = true;
-  Map<String, dynamic> userData = {"role": "patient"};
+  RehappUserRequest userRequest = RehappUserRequest(role: "patient");
   String password = "";
   bool isApiCallProcess = false;
   bool isTherapist = false;
@@ -40,16 +41,16 @@ class _SignupPageState extends State<SignupPage> {
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
           Container(
-            margin: const EdgeInsets.only(top: 23),
+            margin: const EdgeInsets.only(top: 48),
             padding: const EdgeInsets.symmetric(horizontal: 30),
             width: double.infinity,
-            alignment: Alignment.topLeft,
+            alignment: Alignment.centerLeft,
             child: const BackButton()
           ),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-            margin: const EdgeInsets.symmetric(vertical: 23, horizontal: 20),
+            margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Theme.of(context).primaryColor,
@@ -77,7 +78,7 @@ class _SignupPageState extends State<SignupPage> {
                   TextFormField(
                     keyboardType: TextInputType.text,
                     validator: (input) => input!.length > 1 ? null : FILL_OUT_NAME,
-                    onSaved: (input) => userData["firstName"] = input!,
+                    onSaved: (input) => userRequest.firstName = input!,
                     decoration: InputDecoration(
                       hintText: "First name",
                       enabledBorder: UnderlineInputBorder(
@@ -101,7 +102,7 @@ class _SignupPageState extends State<SignupPage> {
                   TextFormField(
                     keyboardType: TextInputType.text,
                     validator: (input) => input!.length > 1 ? null : FILL_OUT_NAME,
-                    onSaved: (input) => userData["lastName"] = input!,
+                    onSaved: (input) => userRequest.lastName = input!,
                     decoration: InputDecoration(
                       hintText: "Last name",
                       enabledBorder: UnderlineInputBorder(
@@ -129,7 +130,7 @@ class _SignupPageState extends State<SignupPage> {
                   TextFormField(
                     keyboardType: TextInputType.text,
                     validator: (input) => input!.contains("@") ? null : INVALID_EMAIL_MESSAGE,
-                    onSaved: (input) => userData["email"] = input!,
+                    onSaved: (input) => userRequest.email = input!,
                     decoration: InputDecoration(
                       hintText: "Email",
                       enabledBorder: UnderlineInputBorder(
@@ -204,9 +205,9 @@ class _SignupPageState extends State<SignupPage> {
                               isTherapist = newValue;
                             });
                             if (!newValue) {
-                              userData["role"] = "patient";
+                              userRequest.role = "patient";
                             } else {
-                              userData["role"] = "therapist";
+                              userRequest.role = "therapist";
                             }
                           }),
                     ],
@@ -226,7 +227,7 @@ class _SignupPageState extends State<SignupPage> {
                         APIService apiService = APIService();
                         apiService.signup(
                           password,
-                          (userData["role"] == "patient") ? Patient.fromJson(userData) : Therapist.fromJson(userData)
+                          userRequest
                         ).then((value) {
                           setState(() {
                             isApiCallProcess = false;
@@ -235,7 +236,7 @@ class _SignupPageState extends State<SignupPage> {
                             content: Text(EMAIL_SUCCESS_SNACKBAR),
                           );
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                          Navigator.of(context).push(
+                          Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
                               builder: (context) => const VerifyEmailPage(nextPage: LoginPage())
                             ),

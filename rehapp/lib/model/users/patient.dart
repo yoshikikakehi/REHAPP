@@ -9,16 +9,20 @@ class Patient extends RehappUser {
     super.firstName = "",
     super.lastName = "",
     super.role = "patient",
+    super.phoneNumber = "",
+    super.profileImage = "",
     this.assignments = const [],
   });
   
   factory Patient.fromJson(Map<String, dynamic> json) {
     return Patient(
-      id: json["id"] ?? "",
-      email: json["email"] ?? "",
-      firstName: json["firstName"] ?? "",
-      lastName: json["lastName"] ?? "",
+      id: json["id"],
+      email: json["email"],
+      firstName: json["firstName"],
+      lastName: json["lastName"],
       role: json["role"] ?? "patient",
+      phoneNumber: json["phoneNumber"],
+      profileImage: json["profileImage"],
       assignments: (json["patients"] != null) ? (json["assignments"] as List).map((item) => item as String).toList() : const [],
     );
   }
@@ -33,6 +37,13 @@ class Patient extends RehappUser {
       "role": role,
       "assignments": assignments,
     };
+
+    if (phoneNumber != null) {
+      map["phoneNumber"] = phoneNumber;
+    }
+    if (profileImage != null) {
+      map["profileImage"] = profileImage;
+    } 
     return map;
   }
 }

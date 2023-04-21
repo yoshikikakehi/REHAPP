@@ -1,13 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rehapp/model/assignments/assignment.dart';
 import 'package:rehapp/model/assignments/assignment_request.dart';
-
+import 'package:rehapp/model/exercises/exercise.dart';
+import 'package:rehapp/model/feedback/feedback.dart';
+import 'package:rehapp/model/feedback/feedback_request.dart';
 import 'package:rehapp/model/users/user.dart';
+import 'package:rehapp/model/users/user_request.dart';
 import 'package:rehapp/model/users/patient.dart';
 import 'package:rehapp/model/users/therapist.dart';
-import 'package:rehapp/model/exercises/exercise.dart';
-import 'package:rehapp/model/assignments/assignment.dart';
-import 'package:rehapp/model/feedback/feedback.dart';
 
 class APIService {
   static FirebaseAuth auth = FirebaseAuth.instance;
@@ -31,7 +32,7 @@ class APIService {
     }
   }
 
-  Future<UserCredential> signup(String password, RehappUser user) async {
+  Future<UserCredential> signup(String password, RehappUserRequest user) async {
     try {
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: user.email.toLowerCase().trim(),
@@ -69,7 +70,9 @@ class APIService {
             lastName: data['lastName'],
             email: data['email'],
             role: data['role'],
-            patients: (data["patients"] as List).map((item) => item as String).toList()
+            phoneNumber: data['phoneNumber'],
+            profileImage: data['profileImage'],
+            patients: (data["patients"] != null) ? (data["patients"] as List).map((item) => item as String).toList() : const []
           );
         } else {
           curUser = Patient(
@@ -78,7 +81,9 @@ class APIService {
             lastName: data['lastName'],
             email: data['email'],
             role: data['role'],
-            assignments: data["assignments"] != null ? (data["assignments"] as List).map((item) => item as String).toList() : const []
+            phoneNumber: data['phoneNumber'],
+            profileImage: data['profileImage'],
+            assignments: (data["assignments"] != null) ? (data["assignments"] as List).map((item) => item as String).toList() : const []
           );
         }
       });
@@ -99,7 +104,7 @@ class APIService {
             lastName: data['lastName'],
             email: data['email'],
             role: data['role'],
-            patients: (data["patients"] as List).map((item) => item as String).toList()
+            patients: (data["patients"] != null) ? (data["patients"] as List).map((item) => item as String).toList() : const []
           );
         } else {
           user = Patient(
@@ -113,6 +118,12 @@ class APIService {
         }
       });
       return user;
+  }
+
+  Future<void> updateUser(RehappUserRequest userRequest) async {
+    await db.collection('users')
+      .doc(auth.currentUser?.uid)
+      .update(userRequest.toJson());
   }
 
   Future<List<Patient>> getPatients(
@@ -189,16 +200,19 @@ class APIService {
         List<DocumentSnapshot> docs = query.docs;
         for (DocumentSnapshot doc in docs) {
           final data = doc.data() as Map<String, dynamic>;
-          assignments.add(Assignment(
-            id: doc.id,
-            patientId: data['patientId'],
-            therapistId: data['therapistId'],
-            exerciseId: data['exerciseId'],
-            exerciseName: data['exerciseName'],
-            frequency: data["frequency"] != null ? (data["frequency"] as List).map((item) => item as String).toList() : const [],
-            duration: data['duration'],
-            details: data['details'],
-          ));
+          assignments.add(
+            Assignment(
+              id: doc.id,
+              patientId: data['patientId'],
+              therapistId: data['therapistId'],
+              exerciseId: data['exerciseId'],
+              exerciseName: data['exerciseName'],
+              frequency: data["frequency"] != null ? (data["frequency"] as List).map((item) => item as String).toList() : const [],
+              duration: data['duration'],
+              details: data['details'],
+              lastCompletedDate: data['lastCompletedDate'] ?? "",
+            )
+          );
         }
       })
       .onError((e, _) => throw Exception(e));
@@ -226,6 +240,7 @@ class APIService {
               frequency: data["frequency"] != null ? (data["frequency"] as List).map((item) => item as String).toList() : const [],
               duration: data['duration'],
               details: data['details'],
+              lastCompletedDate: data['lastCompletedDate'] ?? "",
             );
           });
         })
@@ -289,25 +304,64 @@ class APIService {
     return exercises;
   }
 
-  Future<PatientFeedback> createFeedback(
-      PatientFeedback feedbackData) async {
-    late final PatientFeedback feedback;
+  Future<List<Therapist>> getTherapists(String patientId) async {
+    Set<Therapist> therapists = {};
+    await db.collection('users')
+      .where("patients", arrayContains: patientId)
+      .get()
+      .then((QuerySnapshot query) {
+        List<DocumentSnapshot> docs = query.docs;
+        for (DocumentSnapshot doc in docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          therapists.add(
+            Therapist(
+              id: doc.id,
+              firstName: data['firstName'],
+              lastName: data['lastName'],
+              email: data['email'],
+              role: data['role'],
+              patients: (data["patients"] != null) ? (data["patients"] as List).map((item) => item as String).toList() : const []
+            )
+          );
+        }
+      })
+      .onError((e, _) => throw Exception(e));
+    return therapists.toList();
+  }
+
+  Future<void> createFeedback(PatientFeedbackRequest feedbackData) async {
     await db.collection("feedback")
-        .add(feedbackData.toJson())
-        .then((DocumentReference docRef) {
-          docRef.get().then((DocumentSnapshot doc) {
-            final data = doc.data() as Map<String, dynamic>;
-            feedback = PatientFeedback(
+      .add(feedbackData.toJson())
+      .then((DocumentReference docRef) async {
+        await db.collection("assignments")
+          .doc(feedbackData.assignmentId)
+          .update({"lastCompletedDate": feedbackData.date});
+      })
+      .onError((e, _) => throw Exception(e));
+  }
+
+  Future<List<PatientFeedback>> getFeedback(String assignmentId) async {
+    final List<PatientFeedback> feedbackList = [];
+    await db.collection("feedback")
+      .where("assignmentId", isEqualTo: assignmentId)
+      .get()
+      .then((QuerySnapshot query) {
+        List<DocumentSnapshot> docs = query.docs;
+        for (DocumentSnapshot doc in docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          feedbackList.add(
+            PatientFeedback(
               id: doc.id,
               assignmentId: data["assignmentId"],
               date: data["date"],
               difficulty: data["difficulty"],
               duration: data["duration"],
               comments: data["comments"],
-            );
-          });
-        })
-        .onError((e, _) => throw Exception("User already exists: $e"));
-    return feedback;
+            )
+          );
+        }
+      })
+      .onError((e, _) => throw Exception(e));
+    return feedbackList;
   }
 }

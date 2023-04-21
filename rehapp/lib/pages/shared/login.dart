@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:rehapp/ProgressHUD.dart';
@@ -16,13 +17,34 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   GlobalKey<FormState> globalFormKey = GlobalKey<FormState>();
-  bool hidePassword = true;
   bool isApiCallProcess = false;
 
   String email = "";
   String password = "";
+  bool hidePassword = true;
 
   APIService apiService = APIService();
+
+  @override
+  void initState() {
+    super.initState();
+
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null && mounted) {
+      setState(() => isApiCallProcess = true);
+      // if (user.emailVerified) {
+        Future(() => Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        )).then((value) => setState(() => isApiCallProcess = false));
+      // } else {
+      //   Future(() => Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => const VerifyEmailPage(nextPage: HomePage())),
+      //   ));
+      // }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-            margin: const EdgeInsets.symmetric(vertical: 85, horizontal: 20),
+            margin: const EdgeInsets.only(top: 120, left: 20, right: 20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Theme.of(context).primaryColor,
@@ -73,20 +95,21 @@ class _LoginPageState extends State<LoginPage> {
                   height: 20,
                 ),
                 TextFormField(
+                  autofocus: true,
                   validator: (input) => input!.contains("@") ? null : INVALID_EMAIL_MESSAGE,
                   onSaved: (input) => setState(() => email = input!),
                   decoration: InputDecoration(
                     hintText: "Email",
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .secondary
-                              .withOpacity(0.2)),
+                        color: Theme.of(context)
+                          .colorScheme
+                          .secondary
+                          .withOpacity(0.2)
+                      ),
                     ),
                     focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.secondary),
+                      borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
                     ),
                     prefixIcon: Icon(Icons.email_outlined,
                         color: Theme.of(context).colorScheme.secondary),
@@ -97,6 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 TextFormField(
                   keyboardType: TextInputType.text,
+                  validator: (input) => input!.isEmpty ? "Please enter a password" : null,
                   onSaved: (input) => setState(() => password = input!),
                   obscureText: hidePassword,
                   decoration: InputDecoration(
@@ -109,8 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                               .withOpacity(0.2)),
                     ),
                     focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.secondary),
+                      borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary),
                     ),
                     prefixIcon: Icon(Icons.lock_outlined,
                         color: Theme.of(context).colorScheme.secondary),
@@ -135,8 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 TextButton(
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 80),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 80),
                     backgroundColor: Theme.of(context).colorScheme.secondary,
                     shape: const StadiumBorder(),
                   ),
@@ -152,17 +174,21 @@ class _LoginPageState extends State<LoginPage> {
                             isApiCallProcess = false;
                           });
                           if (userCredential.user != null) {
-                            apiService.getCurrentUser()
-                              .then((user) {
-                                const snackBar = SnackBar(
-                                  content: Text(LOGIN_SUCCESS_SNACKBAR),
-                                );
-                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const VerifyEmailPage(nextPage: HomePage()))
-                                );
-                              });
+                            globalFormKey.currentState!.reset();
+                            if (userCredential.user!.emailVerified) {
+                              const snackBar = SnackBar(content: Text("Login Successful"));
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => const HomePage())
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const VerifyEmailPage(nextPage: HomePage()))
+                              );
+                            }
+                            
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text("Failure"))
@@ -187,9 +213,12 @@ class _LoginPageState extends State<LoginPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 10.0),
                   child: InkWell(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => const ForgotPasswordPage())
-                    ),
+                    onTap: () {
+                      globalFormKey.currentState!.reset();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const ForgotPasswordPage())
+                      );
+                    },
                     child: RichText(
                       text: TextSpan(
                         text: "Forgot Password? ",
@@ -207,6 +236,7 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.only(top: 10.0),
                   child: InkWell(
                     onTap: () {
+                      globalFormKey.currentState!.reset();
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const SignupPage())
