@@ -10,6 +10,7 @@ class Assignment {
   final bool assigned;
   final int completions;
   final String lastCompletedDate;
+  final String description;
 
   Assignment({
     this.id = "",
@@ -20,6 +21,7 @@ class Assignment {
     this.duration = 0,
     this.frequency = const [],
     this.details = "",
+    this.description = "",
     this.assigned = true,
     this.completions = 0,
     this.lastCompletedDate = "",
@@ -35,6 +37,7 @@ class Assignment {
       duration: json["duration"],
       frequency: json["frequency"] != null ? (json["frequency"] as List).map((item) => item as String).toList() : const [],
       details: json["details"],
+      description: json["description"],
       assigned: json["assigned"],
       completions: json["completions"],
       lastCompletedDate: json["lastCompletedDate"],

@@ -108,7 +108,6 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                     const snackBar = SnackBar(
                       content: Text("Adding patient succeeded"),
                     );
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     setState(() {
                       patients.add(patient as Patient);
                       displayedPatients.add(patient);
@@ -116,6 +115,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                       Navigator.pop(context);
                       _textFieldController.clear();
                     });
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   }).catchError((error) {
                     var snackBar = SnackBar(
                       content: Text(error.toString()),

@@ -29,6 +29,13 @@ class _PatientHomePageState extends State<PatientHomePage> {
   List<Assignment> todaysAssignments = [];
   List<Assignment> otherAssignments = [];
 
+  List<Assignment> filteredallAssignments = [];
+  bool filtered = false;
+
+  List<Assignment> prevallAssignments = [];
+  List<Assignment> prevtodaysAssignments = [];
+  List<Assignment> prevotherAssignments = [];
+
   Future<void> navigateAndUpdateAssignment(int index) async {
     Assignment selectedAssignment = (index < todaysAssignments.length) ? todaysAssignments.elementAt(index) : otherAssignments.elementAt(index - todaysAssignments.length);
     final updatedAssignment = await widget.onPush(selectedAssignment);
@@ -43,6 +50,84 @@ class _PatientHomePageState extends State<PatientHomePage> {
       }
     }
   }
+
+  void filterSearchResults(String query) {
+    if (query.isNotEmpty && !query.contains("frequency")) {
+      List<Assignment> filteredAssignments = [];
+      for (Assignment assignment in allAssignments) {
+        if (assignment.exerciseName.toLowerCase().contains(
+            query.toLowerCase()) ||
+            assignment.description.toLowerCase().contains(
+                query.toLowerCase()) ||
+            assignment.details.toLowerCase().contains(query.toLowerCase())) {
+          filteredAssignments.add(assignment);
+        }
+      }
+      setState(() {
+        filtered = true;
+        allAssignments.clear();
+        todaysAssignments.clear();
+        otherAssignments.clear();
+        for (Assignment assignment in filteredAssignments) {
+          if (assignment.frequency.contains(today)) {
+            todaysAssignments.add(assignment);
+          } else {
+            otherAssignments.add(assignment);
+          }
+          allAssignments.add(assignment);
+        }
+      });
+      return;
+    } else if (query.isNotEmpty && query.contains("frequency")) {
+      if (filtered) {
+        filtered = false;
+        allAssignments.clear();
+        todaysAssignments.clear();
+        otherAssignments.clear();
+        allAssignments.addAll(prevallAssignments);
+        todaysAssignments.addAll(prevtodaysAssignments);
+        otherAssignments.addAll(prevotherAssignments);
+      }
+      filtered = true;
+      Map filteredByFreq = Map<Assignment,int>();
+      for (Assignment assignment in allAssignments) {
+          print(assignment.exerciseName);
+          print(assignment.frequency.length);
+          filteredByFreq[assignment] = assignment.frequency.length;
+       }
+      print(filteredByFreq);
+      var sortedByValueMap = Map.fromEntries(
+          filteredByFreq.entries.toList()..sort((e1, e2) => e1.value.compareTo(e2.value)));
+      print(sortedByValueMap);
+      setState(() {
+        filtered = true;
+        allAssignments.clear();
+        todaysAssignments.clear();
+        otherAssignments.clear();
+        for (Assignment assignment in sortedByValueMap.keys) {
+          if (assignment.frequency.contains(today)) {
+            todaysAssignments.add(assignment);
+          } else {
+            otherAssignments.add(assignment);
+          }
+          allAssignments.add(assignment);
+        }
+      });
+      return;
+    }
+    else {
+      setState(() {
+        filtered = false;
+        allAssignments.clear();
+        todaysAssignments.clear();
+        otherAssignments.clear();
+        allAssignments.addAll(prevallAssignments);
+        todaysAssignments.addAll(prevtodaysAssignments);
+        otherAssignments.addAll(prevotherAssignments);
+      });
+    }
+  }
+
 
   @override
   void initState() {
@@ -97,6 +182,40 @@ class _PatientHomePageState extends State<PatientHomePage> {
                   )
                 ),
               ),
+              Container(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 10.0),
+                    child: TextField(
+                      // Search Bar
+                        onChanged: (value) {
+                          if (!filtered) {
+                            prevtodaysAssignments.clear();
+                            prevotherAssignments.clear();
+                            prevallAssignments.clear();
+                            for (Assignment assignment in allAssignments) {
+                              if (assignment.frequency.contains(today)) {
+                                prevtodaysAssignments.add(assignment);
+                              } else {
+                                prevotherAssignments.add(assignment);
+                              }
+                              prevallAssignments.add(assignment);
+                            }
+                          }
+
+                          filterSearchResults(value);
+                        },
+                        controller: editingController,
+                        decoration: const InputDecoration(
+                          labelText: "Search",
+                          hintText: "Search",
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(25.0))
+                          ),
+                        )
+                    ),
+                  )
+              ),
               Expanded(
                 child: allAssignments.isEmpty ? const Center(
                   child: Text("Looks like you have no exercises assigned.")
@@ -107,8 +226,11 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       .then((value) {
                         setState(() {
                           allAssignments = value;
-                          todaysAssignments = value.where((assignment) => assignment.frequency.contains(today)).toList();
-                          otherAssignments = allAssignments.toSet().difference(todaysAssignments.toSet()).toList();
+                            todaysAssignments = value.where((assignment) =>
+                                assignment.frequency.contains(today)).toList();
+                            otherAssignments =
+                                allAssignments.toSet().difference(
+                                    todaysAssignments.toSet()).toList();
                           isApiCallProcess = false;
                         });
                       })

@@ -240,6 +240,7 @@ class APIService {
               frequency: data["frequency"] != null ? (data["frequency"] as List).map((item) => item as String).toList() : const [],
               duration: data['duration'],
               details: data['details'],
+              description: data['description'],
               lastCompletedDate: data['lastCompletedDate'] ?? "",
             );
           });

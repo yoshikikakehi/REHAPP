@@ -117,6 +117,7 @@ class AssignExercisePageState extends State<AssignExercisePage> {
                 onSaved: (_) {
                   requestModel.exerciseId = selectedExercise!.id;
                   requestModel.exerciseName = selectedExercise!.name;
+                  requestModel.description = selectedExercise!.description;
                 },
               ),
 

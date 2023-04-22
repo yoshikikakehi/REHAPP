@@ -6,6 +6,7 @@ class AssignmentRequest {
   int duration;
   List<String> frequency;
   String details;
+  String description;
 
   AssignmentRequest({
     this.patientId = "",
@@ -15,6 +16,7 @@ class AssignmentRequest {
     this.duration = 0,
     this.frequency = const [],
     this.details = "",
+    this.description = "", //ADDED
   });
 
   factory AssignmentRequest.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class AssignmentRequest {
       duration: json["duration"],
       frequency: json["frequence"] != null ? (json["frequence"] as List).map((item) => item as String).toList() : const [],
       details: json["details"],
+      description: json["description"], // ADDED
     );
   }
 
@@ -38,6 +41,7 @@ class AssignmentRequest {
       "duration": duration,
       "frequency": frequency,
       "details": details,
+      "description": description, // ADDED
     };
     return map;
   }
