@@ -5,13 +5,17 @@ import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/assignments/assignment.dart';
 import 'package:rehapp/model/users/patient.dart';
-
+import 'package:rehapp/pages/patient/notifications.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 
 class PatientHomePage extends StatefulWidget {
   final BuildContext buildContext;
   final Future<Assignment?> Function(Assignment) onPush;
-  const PatientHomePage({Key? key, required this.buildContext, required this.onPush}) : super(key: key);
-  @override State<PatientHomePage> createState() => _PatientHomePageState();
+  const PatientHomePage(
+      {Key? key, required this.buildContext, required this.onPush})
+      : super(key: key);
+  @override
+  State<PatientHomePage> createState() => _PatientHomePageState();
 }
 
 class _PatientHomePageState extends State<PatientHomePage> {
@@ -37,16 +41,19 @@ class _PatientHomePageState extends State<PatientHomePage> {
   List<Assignment> prevotherAssignments = [];
 
   Future<void> navigateAndUpdateAssignment(int index) async {
-    Assignment selectedAssignment = (index < todaysAssignments.length) ? todaysAssignments.elementAt(index) : otherAssignments.elementAt(index - todaysAssignments.length);
+    Assignment selectedAssignment = (index < todaysAssignments.length)
+        ? todaysAssignments.elementAt(index)
+        : otherAssignments.elementAt(index - todaysAssignments.length);
     final updatedAssignment = await widget.onPush(selectedAssignment);
-  
+
     if (!mounted) return;
 
     if (updatedAssignment != null) {
       if (index < todaysAssignments.length) {
         setState(() => todaysAssignments[index] = updatedAssignment);
       } else {
-        setState(() => otherAssignments[index - todaysAssignments.length] = updatedAssignment);
+        setState(() => otherAssignments[index - todaysAssignments.length] =
+            updatedAssignment);
       }
     }
   }
@@ -55,10 +62,12 @@ class _PatientHomePageState extends State<PatientHomePage> {
     if (query.isNotEmpty && !query.contains("frequency")) {
       List<Assignment> filteredAssignments = [];
       for (Assignment assignment in allAssignments) {
-        if (assignment.exerciseName.toLowerCase().contains(
-            query.toLowerCase()) ||
-            assignment.description.toLowerCase().contains(
-                query.toLowerCase()) ||
+        if (assignment.exerciseName
+                .toLowerCase()
+                .contains(query.toLowerCase()) ||
+            assignment.description
+                .toLowerCase()
+                .contains(query.toLowerCase()) ||
             assignment.details.toLowerCase().contains(query.toLowerCase())) {
           filteredAssignments.add(assignment);
         }
@@ -89,15 +98,15 @@ class _PatientHomePageState extends State<PatientHomePage> {
         otherAssignments.addAll(prevotherAssignments);
       }
       filtered = true;
-      Map filteredByFreq = Map<Assignment,int>();
+      Map filteredByFreq = Map<Assignment, int>();
       for (Assignment assignment in allAssignments) {
-          print(assignment.exerciseName);
-          print(assignment.frequency.length);
-          filteredByFreq[assignment] = assignment.frequency.length;
-       }
+        print(assignment.exerciseName);
+        print(assignment.frequency.length);
+        filteredByFreq[assignment] = assignment.frequency.length;
+      }
       print(filteredByFreq);
-      var sortedByValueMap = Map.fromEntries(
-          filteredByFreq.entries.toList()..sort((e1, e2) => e1.value.compareTo(e2.value)));
+      var sortedByValueMap = Map.fromEntries(filteredByFreq.entries.toList()
+        ..sort((e1, e2) => e1.value.compareTo(e2.value)));
       print(sortedByValueMap);
       setState(() {
         filtered = true;
@@ -114,8 +123,7 @@ class _PatientHomePageState extends State<PatientHomePage> {
         }
       });
       return;
-    }
-    else {
+    } else {
       setState(() {
         filtered = false;
         allAssignments.clear();
@@ -128,29 +136,32 @@ class _PatientHomePageState extends State<PatientHomePage> {
     }
   }
 
-
   @override
   void initState() {
-    apiService.getAssignments(FirebaseAuth.instance.currentUser!.uid)
-      .then((value) {
-        setState(() {
-          allAssignments = value;
-          todaysAssignments = value.where((assignment) => assignment.frequency.contains(today)).toList();
-          otherAssignments = allAssignments.toSet().difference(todaysAssignments.toSet()).toList();
-          isApiCallProcess = false;
-        });
-      })
-      .catchError((error) {
-        const snackBar = SnackBar(
-          content: Text("Loading exercises failed"),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        setState(() => isApiCallProcess = false);
+    apiService
+        .getAssignments(FirebaseAuth.instance.currentUser!.uid)
+        .then((value) {
+      setState(() {
+        allAssignments = value;
+        todaysAssignments = value
+            .where((assignment) => assignment.frequency.contains(today))
+            .toList();
+        otherAssignments = allAssignments
+            .toSet()
+            .difference(todaysAssignments.toSet())
+            .toList();
+        isApiCallProcess = false;
       });
-    apiService.getCurrentUser()
-      .then((userValue) {
-        user = userValue as Patient;
-      });
+    }).catchError((error) {
+      const snackBar = SnackBar(
+        content: Text("Loading exercises failed"),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      setState(() => isApiCallProcess = false);
+    });
+    apiService.getCurrentUser().then((userValue) {
+      user = userValue as Patient;
+    });
     super.initState();
   }
 
@@ -163,6 +174,36 @@ class _PatientHomePageState extends State<PatientHomePage> {
     );
   }
 
+  final Notifications _notifications = Notifications();
+  DateTime selectedDate = DateTime.now();
+  DateTime fullDate = DateTime.now();
+  Future<DateTime> _selectDate(
+      BuildContext context, String id, String title, String description) async {
+    final date = await showDatePicker(
+        context: context,
+        firstDate: DateTime(1900),
+        initialDate: selectedDate,
+        lastDate: DateTime(2100));
+    if (date != null) {
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(selectedDate),
+      );
+      if (time != null) {
+        setState(() {
+          fullDate = DateTimeField.combine(date, time);
+        });
+        await _notifications.scheduleNotification(
+            title: title,
+            body: description,
+            scheduleNotificationDateTime: fullDate);
+      }
+      return DateTimeField.combine(date, time);
+    } else {
+      return selectedDate;
+    }
+  }
+
   Widget _uiSetup(BuildContext context) {
     return Stack(
       children: <Widget>[
@@ -172,147 +213,205 @@ class _PatientHomePageState extends State<PatientHomePage> {
             child: Column(children: <Widget>[
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-                child: Text(
-                  'Welcome, ${user.firstName}',
-                  textAlign: TextAlign.left,
-                  style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold
-                  )
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                child: Text('Welcome, ${user.firstName}',
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(
+                        fontSize: 30, fontWeight: FontWeight.bold)),
               ),
               Container(
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: 10.0),
-                    child: TextField(
-                      // Search Bar
-                        onChanged: (value) {
-                          if (!filtered) {
-                            prevtodaysAssignments.clear();
-                            prevotherAssignments.clear();
-                            prevallAssignments.clear();
-                            for (Assignment assignment in allAssignments) {
-                              if (assignment.frequency.contains(today)) {
-                                prevtodaysAssignments.add(assignment);
-                              } else {
-                                prevotherAssignments.add(assignment);
-                              }
-                              prevallAssignments.add(assignment);
-                            }
+                padding: EdgeInsets.only(bottom: 10.0),
+                child: TextField(
+                    // Search Bar
+                    onChanged: (value) {
+                      if (!filtered) {
+                        prevtodaysAssignments.clear();
+                        prevotherAssignments.clear();
+                        prevallAssignments.clear();
+                        for (Assignment assignment in allAssignments) {
+                          if (assignment.frequency.contains(today)) {
+                            prevtodaysAssignments.add(assignment);
+                          } else {
+                            prevotherAssignments.add(assignment);
                           }
+                          prevallAssignments.add(assignment);
+                        }
+                      }
 
-                          filterSearchResults(value);
-                        },
-                        controller: editingController,
-                        decoration: const InputDecoration(
-                          labelText: "Search",
-                          hintText: "Search",
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(25.0))
-                          ),
-                        )
-                    ),
-                  )
-              ),
+                      filterSearchResults(value);
+                    },
+                    controller: editingController,
+                    decoration: const InputDecoration(
+                      labelText: "Search",
+                      hintText: "Search",
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(25.0))),
+                    )),
+              )),
               Expanded(
-                child: allAssignments.isEmpty ? const Center(
-                  child: Text("Looks like you have no exercises assigned.")
-                ) : RefreshIndicator(
-                  displacement: 0.0,
-                  onRefresh: () async {
-                    await apiService.getAssignments(FirebaseAuth.instance.currentUser!.uid)
-                      .then((value) {
-                        setState(() {
-                          allAssignments = value;
-                            todaysAssignments = value.where((assignment) =>
-                                assignment.frequency.contains(today)).toList();
-                            otherAssignments =
-                                allAssignments.toSet().difference(
-                                    todaysAssignments.toSet()).toList();
-                          isApiCallProcess = false;
-                        });
-                      })
-                      .catchError((error) {
-                        const snackBar = SnackBar(
-                          content: Text("Loading exercises failed"),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        setState(() => isApiCallProcess = false);
-                      });
-                  },
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    controller: controller,
-                    itemCount: allAssignments.length,
-                    itemBuilder: (context, index) => Column(
-                      children: <Widget>[
-                        (index == 0) ? Column(
-                          children: <Widget>[
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 8.0),
-                              child: const Text(
-                                'Today\'s Exercises:',
-                                style: TextStyle(fontSize: 20)
-                              ),
-                            ), (todaysAssignments.isEmpty) ? const SizedBox(
-                              height: 50,
-                              child: Center(
-                                child: Text(
-                                  "You have no exercises to perform today!",
-                                )
-                              )
-                            ) : Container()
-                          ]
-                        ) : Container(),
-                        (index == todaysAssignments.length) ? Column(
-                          children: <Widget>[
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-                              child: const Text(
-                                'Other Assigned Exercises:',
-                                style: TextStyle(fontSize: 20)
-                              ),
-                            ), (otherAssignments.isEmpty) ? const SizedBox(
-                              height: 50,
-                              child: Center(
-                                child: Text("You have no other assigned exercises!")
-                              )
-                            ) : Container()
-                          ]
-                        ) : Container(),
-                        Card(
-                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
-                          elevation: 3,
-                          child: InkWell(
-                            splashColor:Colors.blue.withAlpha(30),
-                            onTap: () => navigateAndUpdateAssignment(index),
-                            child: Column(
-                              children: <Widget>[
-                                (index < todaysAssignments.length) ? ListTile(
-                                  title: Text(todaysAssignments.elementAt(index).exerciseName),
-                                  subtitle: Text(todaysAssignments.elementAt(index).frequency.join(', ')),
-                                  trailing: (todaysAssignments.elementAt(index).lastCompletedDate == todayDate) ? const Icon(
-                                    Icons.check_circle
-                                  ) : null,
-                                ) : ListTile(
-                                  title: Text(otherAssignments.elementAt(index - todaysAssignments.length).exerciseName),
-                                  subtitle: Text(otherAssignments.elementAt(index - todaysAssignments.length).frequency.join(', ')),
-                                  trailing: (otherAssignments.elementAt(index - todaysAssignments.length).lastCompletedDate == todayDate) ? const Icon(
-                                    Icons.check_circle
-                                  ) : null
-                                )
-                              ],
-                            )
-                          ),
-                        )
-                      ]
-                    )
-                  ),
-                ),
+                child: allAssignments.isEmpty
+                    ? const Center(
+                        child:
+                            Text("Looks like you have no exercises assigned."))
+                    : RefreshIndicator(
+                        displacement: 0.0,
+                        onRefresh: () async {
+                          await apiService
+                              .getAssignments(
+                                  FirebaseAuth.instance.currentUser!.uid)
+                              .then((value) {
+                            setState(() {
+                              allAssignments = value;
+                              todaysAssignments = value
+                                  .where((assignment) =>
+                                      assignment.frequency.contains(today))
+                                  .toList();
+                              otherAssignments = allAssignments
+                                  .toSet()
+                                  .difference(todaysAssignments.toSet())
+                                  .toList();
+                              isApiCallProcess = false;
+                            });
+                          }).catchError((error) {
+                            const snackBar = SnackBar(
+                              content: Text("Loading exercises failed"),
+                            );
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(snackBar);
+                            setState(() => isApiCallProcess = false);
+                          });
+                        },
+                        child: ListView.builder(
+                            physics: const BouncingScrollPhysics(
+                                parent: AlwaysScrollableScrollPhysics()),
+                            controller: controller,
+                            itemCount: allAssignments.length,
+                            itemBuilder: (context, index) =>
+                                Column(children: <Widget>[
+                                  (index == 0)
+                                      ? Column(children: <Widget>[
+                                          Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.only(
+                                                left: 10.0,
+                                                right: 10.0,
+                                                bottom: 8.0),
+                                            child: const Text(
+                                                'Today\'s Exercises:',
+                                                style: TextStyle(fontSize: 20)),
+                                          ),
+                                          (todaysAssignments.isEmpty)
+                                              ? const SizedBox(
+                                                  height: 50,
+                                                  child: Center(
+                                                      child: Text(
+                                                    "You have no exercises to perform today!",
+                                                  )))
+                                              : Container()
+                                        ])
+                                      : Container(),
+                                  (index == todaysAssignments.length)
+                                      ? Column(children: <Widget>[
+                                          Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10.0,
+                                                vertical: 8.0),
+                                            child: const Text(
+                                                'Other Assigned Exercises:',
+                                                style: TextStyle(fontSize: 20)),
+                                          ),
+                                          (otherAssignments.isEmpty)
+                                              ? const SizedBox(
+                                                  height: 50,
+                                                  child: Center(
+                                                      child: Text(
+                                                          "You have no other assigned exercises!")))
+                                              : Container()
+                                        ])
+                                      : Container(),
+                                  Card(
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(8.0))),
+                                    elevation: 3,
+                                    child: InkWell(
+                                        splashColor: Colors.blue.withAlpha(30),
+                                        onTap: () =>
+                                            navigateAndUpdateAssignment(index),
+                                        child: Column(
+                                          children: <Widget>[
+                                            (index < todaysAssignments.length)
+                                                ? ListTile(
+                                                    title: Text(
+                                                        todaysAssignments
+                                                            .elementAt(index)
+                                                            .exerciseName),
+                                                    subtitle: Column(
+                                                      children: <Widget>[
+                                                        Text(todaysAssignments
+                                                            .elementAt(index)
+                                                            .frequency
+                                                            .join(', ')),
+                                                        ElevatedButton(
+                                                            child: Text(
+                                                                'Add Reminder'),
+                                                            onPressed: () => _selectDate(
+                                                                context,
+                                                                todaysAssignments
+                                                                    .elementAt(
+                                                                        index)
+                                                                    .exerciseId,
+                                                                todaysAssignments
+                                                                    .elementAt(
+                                                                        index)
+                                                                    .exerciseName,
+                                                                todaysAssignments
+                                                                    .elementAt(
+                                                                        index)
+                                                                    .description))
+                                                      ],
+                                                    ),
+                                                    trailing: (todaysAssignments
+                                                                .elementAt(
+                                                                    index)
+                                                                .lastCompletedDate ==
+                                                            todayDate)
+                                                        ? const Icon(
+                                                            Icons.check_circle)
+                                                        : null,
+                                                  )
+                                                : ListTile(
+                                                    title: Text(otherAssignments
+                                                        .elementAt(index -
+                                                            todaysAssignments
+                                                                .length)
+                                                        .exerciseName),
+                                                    subtitle: Text(
+                                                        otherAssignments
+                                                            .elementAt(index -
+                                                                todaysAssignments
+                                                                    .length)
+                                                            .frequency
+                                                            .join(', ')),
+                                                    trailing: (otherAssignments
+                                                                .elementAt(index -
+                                                                    todaysAssignments
+                                                                        .length)
+                                                                .lastCompletedDate ==
+                                                            todayDate)
+                                                        ? const Icon(
+                                                            Icons.check_circle)
+                                                        : null)
+                                          ],
+                                        )),
+                                  )
+                                ])),
+                      ),
               )
             ]),
           ),
