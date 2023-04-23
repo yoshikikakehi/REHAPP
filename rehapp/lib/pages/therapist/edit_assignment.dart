@@ -1,16 +1,16 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/assets/constants.dart';
+import 'package:rehapp/model/assignments/assignment.dart';
 import 'package:rehapp/model/assignments/assignment_request.dart';
 import 'package:rehapp/model/exercises/exercise.dart';
-import 'package:rehapp/model/users/patient.dart';
 
 class EditAssignmentPage extends StatefulWidget {
-  final Patient patient;
-  const EditAssignmentPage({Key? key, required this.patient}) : super(key: key);
+  final Assignment assignment;
+  final Exercise exercise;
+  const EditAssignmentPage({Key? key, required this.assignment, required this.exercise}) : super(key: key);
 
   @override
   EditAssignmentPageState createState() {
@@ -20,16 +20,13 @@ class EditAssignmentPage extends StatefulWidget {
 
 class EditAssignmentPageState extends State<EditAssignmentPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  Exercise? selectedExercise;
   TextEditingController descriptionController = TextEditingController(text: "Description of the selected exercise");
-  final List<Exercise> exercises = [];
+  final Map<String, Exercise> exercises = {};
 
   APIService apiService = APIService();
   bool isApiCallProcess = false;
 
-  AssignmentRequest requestModel = AssignmentRequest(
-    therapistId: FirebaseAuth.instance.currentUser!.uid
-  );
+  AssignmentRequest requestModel = AssignmentRequest();
 
   Map<String, bool> days = {
     "Sunday": false,
@@ -44,12 +41,11 @@ class EditAssignmentPageState extends State<EditAssignmentPage> {
 
   @override
   void initState() {
-    apiService.getExercises()
-      .then((exerciseValues) {
-        setState(() {
-          exercises.addAll(exerciseValues);
-        });
-      });
+    descriptionController.text = widget.exercise.description;
+    for (var element in widget.assignment.frequency) {
+      days[element] = true;
+    }
+    requestModel = widget.assignment.toAssignmentRequest();
     super.initState();
   }
 
@@ -66,7 +62,7 @@ class EditAssignmentPageState extends State<EditAssignmentPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue[300],
-        title: Text('Assign Exercise to ${widget.patient.firstName}'),
+        title: const Text('Edit Assigned Exercise'),
       ),
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical,
@@ -80,44 +76,27 @@ class EditAssignmentPageState extends State<EditAssignmentPage> {
                 padding: const EdgeInsets.only(bottom: 10.0),
                 child: const Text('Exercise', style: TextStyle(fontSize: 16)),
               ),
-              FormField<String>(
-                validator: (input) => (input == null || input.isEmpty) ? "Please select an exercise" : null,
-                builder: (FormFieldState<String> state) {
-                  return InputDecorator(
-                    decoration: InputDecoration(
-                      hintText: 'Select Exercise',
-                      border: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.grey, width: 1.0),
-                        borderRadius: BorderRadius.circular(5.0)
-                      ),
-                      errorText: state.errorText
-                    ),
-                    isEmpty: selectedExercise == null,
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<Exercise>(
-                        value: selectedExercise,
-                        isDense: true,
-                        onChanged: (Exercise? newValue) {
-                          setState(() {
-                            selectedExercise = newValue;
-                            descriptionController.text = selectedExercise?.description ?? "Description of the selected exercise";
-                            state.didChange(newValue?.id);
-                          });
-                        },
-                        items: exercises.map((Exercise exercise) {
-                          return DropdownMenuItem<Exercise>(
-                            value: exercise,
-                            child: Text(exercise.name),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  );
-                },
-                onSaved: (_) {
-                  requestModel.exerciseId = selectedExercise!.id;
-                  requestModel.exerciseName = selectedExercise!.name;
-                },
+              InputDecorator(
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  hintText: 'Select Exercise',
+                  border: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                    borderRadius: BorderRadius.circular(5.0)
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<Exercise>(
+                    value: widget.exercise,
+                    isDense: true,
+                    onChanged: null,
+                    items: [ DropdownMenuItem<Exercise>(
+                      value: widget.exercise,
+                      child: Text(widget.exercise.name),
+                    )],
+                  ),
+                ),
               ),
 
               Container(
@@ -156,6 +135,7 @@ class EditAssignmentPageState extends State<EditAssignmentPage> {
                 child: const Text('Additional Details', style: TextStyle(fontSize: 16)),
               ),
               TextFormField(
+                initialValue: requestModel.details,
                 keyboardType: TextInputType.text,
                 minLines: 3,
                 maxLines: null,
@@ -175,6 +155,7 @@ class EditAssignmentPageState extends State<EditAssignmentPage> {
                 child: const Text('Expected Time to Complete', style: TextStyle(fontSize: 16)),
               ),
               TextFormField(
+                initialValue: requestModel.duration.toString(),
                 validator: (input) => input!.isEmpty ? EMPTY_RESPONSE : null,
                 keyboardType: TextInputType.number,
                 inputFormatters: <TextInputFormatter>[
@@ -222,13 +203,18 @@ class EditAssignmentPageState extends State<EditAssignmentPage> {
                     isApiCallProcess = true;
                   });
                   if (validateAndSave()) {
-                    requestModel.patientId = widget.patient.id;
-                    apiService.createAssignment(requestModel)
-                      .then((value) {
+                    apiService.updateAssignment(widget.assignment.id, requestModel)
+                      .then((_) {
                         setState(() {
                           isApiCallProcess = false;
                         });
-                        Navigator.pop(context, value);
+                        Navigator.pop(
+                          context,
+                          Assignment.fromJson(
+                            {"id": widget.assignment.id}
+                              ..addAll(requestModel.toJson())
+                          )
+                        );
                       }).catchError((error) {
                         const snackBar = SnackBar(
                           content: Text("Assigning exercises failed"),
@@ -245,7 +231,7 @@ class EditAssignmentPageState extends State<EditAssignmentPage> {
                   }
                 },
                 child: const Text(
-                  'Assign Exercise',
+                  'Save',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20

@@ -1,3 +1,5 @@
+import 'package:rehapp/model/assignments/assignment_request.dart';
+
 class Assignment {
   final String id;
   final String patientId;
@@ -38,6 +40,21 @@ class Assignment {
       assigned: json["assigned"],
       completions: json["completions"],
       lastCompletedDate: json["lastCompletedDate"],
+    );
+  }
+
+  AssignmentRequest toAssignmentRequest() {
+    return AssignmentRequest(
+      patientId: patientId,
+      therapistId: therapistId,
+      exerciseId: exerciseId,
+      exerciseName: exerciseName,
+      duration: duration,
+      frequency: frequency,
+      details: details,
+      assigned: assigned,
+      completions: completions,
+      lastCompletedDate: lastCompletedDate,
     );
   }
 

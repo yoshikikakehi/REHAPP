@@ -181,7 +181,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                             IconButton(
                               iconSize: 30,
                               splashRadius: 25,
-                              onPressed: () => {_displayTextInputDialog(context)},
+                              onPressed: () => _displayTextInputDialog(context),
                               icon: const Icon(
                                 Icons.add_circle_outline_rounded,
                                 color: Colors.black,
@@ -261,23 +261,6 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                   )
                                 ),
                               ),
-                              onDismissed: (direction) {
-                                apiService.deletePatient(widget.user.patients.elementAt(index))
-                                  .then((value) {
-                                    setState(() {
-                                      displayedPatients.removeAt(index);
-                                      patients.removeAt(index);
-                                      widget.user.patients.removeAt(index);
-                                    });
-                                  }).catchError((error) {
-                                    const snackBar = SnackBar(
-                                      content:
-                                          Text("Deleting patient failed"),
-                                    );
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(snackBar);
-                                  });
-                              },
                               confirmDismiss: (direction) async {
                                 return await showDialog(
                                   context: context,
@@ -287,12 +270,27 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                       child: const Text("No"),
                                     );
                                     Widget yesButton = TextButton(
-                                      onPressed: () => Navigator.of(context).pop(true),
+                                      onPressed: () async {
+                                        bool dismiss = true;
+                                        await apiService.removePatient(displayedPatients.elementAt(index).id)
+                                          .then((_) => setState(() {
+                                            final removedPatient = displayedPatients.removeAt(index);
+                                            final indexOfDeletedPatient = patients.indexOf(removedPatient);
+                                            patients.removeAt(indexOfDeletedPatient);
+                                            widget.user.patients.removeAt(indexOfDeletedPatient);
+                                          }))
+                                          .catchError((error) {
+                                            final snackBar = SnackBar(content: Text(error.toString().substring(11)));
+                                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                            dismiss = false;
+                                          });
+                                        if (mounted) Navigator.of(context).pop(dismiss);
+                                      },
                                       child: const Text("Yes"),
                                     );
                                     return AlertDialog(
                                       title: const Text("Delete patient?"),
-                                      content: const Text("Do you want to remove this patient from your roster?"),
+                                      content: const Text("Do you want to remove this patient from your list of patients?"),
                                       actions: [noButton, yesButton],
                                     );
                                   }
@@ -307,12 +305,23 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
                                   child: ListTile(
                                     title: Text("${displayedPatients.elementAt(index).firstName} ${displayedPatients.elementAt(index).lastName}"),
                                     subtitle: Text(displayedPatients.elementAt(index).email),
-                                    leading: const SizedBox(
+                                    leading: SizedBox(
                                       height: double.infinity,
-                                      child: Icon(
+                                      child: (displayedPatients.elementAt(index).profileImage != null && displayedPatients.elementAt(index).profileImage!.isNotEmpty) ? CircleAvatar(
+                                        radius: 17.5,
+                                        backgroundColor: Colors.black,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(30),
+                                          child: Image.network(
+                                            displayedPatients.elementAt(index).profileImage!,
+                                            width: 30,
+                                            height: 30
+                                          )
+                                        )
+                                      ) : const Icon(
                                         Icons.account_circle_outlined,
                                         color: Colors.black,
-                                        size: 25,
+                                        size: 37.5,
                                       ),
                                     ),
                                   ),

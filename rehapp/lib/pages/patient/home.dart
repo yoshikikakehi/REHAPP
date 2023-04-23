@@ -174,13 +174,13 @@ class _PatientHomePageState extends State<PatientHomePage> {
                                   title: Text(todaysAssignments.elementAt(index).exerciseName),
                                   subtitle: Text(todaysAssignments.elementAt(index).frequency.join(', ')),
                                   trailing: (todaysAssignments.elementAt(index).lastCompletedDate == todayDate) ? const Icon(
-                                    Icons.check_circle
+                                    Icons.check_circle_outline
                                   ) : null,
                                 ) : ListTile(
                                   title: Text(otherAssignments.elementAt(index - todaysAssignments.length).exerciseName),
                                   subtitle: Text(otherAssignments.elementAt(index - todaysAssignments.length).frequency.join(', ')),
                                   trailing: (otherAssignments.elementAt(index - todaysAssignments.length).lastCompletedDate == todayDate) ? const Icon(
-                                    Icons.check_circle
+                                    Icons.check_circle_outline
                                   ) : null
                                 )
                               ],

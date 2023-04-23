@@ -19,6 +19,69 @@ class _AssignmentPageState extends State<AssignmentPage> {
   Exercise exercise = Exercise();
   YoutubePlayerController? _controller;
 
+  bool confirmed = false;
+
+  void setConfirmed(newVal) => setState(() => confirmed = newVal);
+
+  Future<void> _displaySafetyBox(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          bool isSelected = confirmed;
+          return AlertDialog(
+            title: const Text("Safety Box"),
+            titlePadding: const EdgeInsets.only(top: 18, left: 12, right: 12, bottom: 0),
+            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            content: SizedBox(
+              height: 196,
+              child: Column(children:[
+                const Text("If you feel unwell and cannot complete the exercises, do not continue using the app and seek medical help immediately. Continued use of the app means that you accept that you are physically able to complete the exercises."),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () {
+                    setState(() => isSelected = !isSelected);
+                    setConfirmed(!confirmed);
+                  },
+                  child: Row(
+                    children: <Widget>[
+                      const Expanded(child: Text("I understand and confirm that I am physically well and able to complete the exercise.",)),
+                      Checkbox(
+                        value: isSelected,
+                        onChanged: (bool? newValue) {
+                          setState(() => isSelected = newValue!);
+                          setConfirmed(newValue!);
+                        },
+                      ),
+                    ],
+                  ),
+                )
+              ]),
+            ),
+            actionsPadding: const EdgeInsets.only(top: 0, left: 12, right: 12, bottom: 12,),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  setState(() => isSelected = false);
+                  setConfirmed(false);
+                  Navigator.pop(context);
+                },
+                child: const Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: (isSelected) ? () async {
+                  Navigator.pop(context);
+                  await navigate();
+                } : null,
+                child: const Text("Continue"),
+              ),
+            ],
+          );
+        });
+      }
+    );
+  }
+
   bool isDisabled() {
     return (widget.assignment.lastCompletedDate == DateFormat('yMMMEd').format(DateTime.now()));
   }
@@ -148,8 +211,14 @@ class _AssignmentPageState extends State<AssignmentPage> {
                   exercise.description,
                   style: const TextStyle(fontSize: 18)
                 ),
-                const SizedBox(height: 8.0),
-                // Exercise Description
+                const SizedBox(height: 12.0),
+                const Text(
+                  "Additional Details:",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.normal
+                  )
+                ),
                 Text(
                   widget.assignment.details,
                   style: const TextStyle(fontSize: 18)
@@ -166,7 +235,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                 shape: const StadiumBorder(),
               ),
-              onPressed: () => isDisabled() ? null : navigate(),
+              onPressed: isDisabled() ? null : (!confirmed) ? () => _displaySafetyBox(context) : navigate,
               child: const Text(
                 "Complete Assignment",
                 style: TextStyle(

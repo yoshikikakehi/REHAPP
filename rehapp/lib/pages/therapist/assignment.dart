@@ -1,16 +1,19 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rehapp/ProgressHUD.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/assignments/assignment.dart';
 import 'package:rehapp/model/exercises/exercise.dart';
 import 'package:rehapp/model/users/patient.dart';
+import 'package:rehapp/pages/therapist/edit_assignment.dart';
 import 'package:rehapp/pages/therapist/view_feedback.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class AssignmentPage extends StatefulWidget {
   final Assignment assignment;
   final Patient patient;
-  const AssignmentPage({Key? key, required this.assignment, required this.patient}) : super(key: key);
+  final void Function(Assignment, Assignment) updateAssignment;
+  const AssignmentPage({Key? key, required this.assignment, required this.patient, required this.updateAssignment}) : super(key: key);
   @override State<AssignmentPage> createState() => _AssignmentPageState();
 }
 
@@ -18,13 +21,29 @@ class _AssignmentPageState extends State<AssignmentPage> {
   APIService apiService = APIService();
   bool isApiCallProcess = true;
   Exercise exercise = Exercise();
+  Assignment assignment = Assignment();
   YoutubePlayerController? _controller;
+
+  Future<void> navigateAndUpdateAssignment() async {
+    final newAssignment = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditAssignmentPage(assignment: assignment, exercise: exercise)),
+    );
+
+    if (!mounted) return;
+    if (newAssignment != null) {
+      widget.updateAssignment(assignment, newAssignment);
+      setState(() => assignment = newAssignment);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+
+    setState(() => assignment = widget.assignment);
     apiService
-      .getExercise(widget.assignment.exerciseId)
+      .getExercise(assignment.exerciseId)
       .then((Exercise exerciseValue) {
         setState(() {
           exercise = exerciseValue;
@@ -47,6 +66,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
   @override
   void dispose() {
     super.dispose();
+    _controller?.dispose();
   }
 
   @override
@@ -64,10 +84,16 @@ class _AssignmentPageState extends State<AssignmentPage> {
         backgroundColor: Colors.blue[300],
         shadowColor: Colors.grey,
         title: Text(
-          widget.assignment.exerciseName,
+          assignment.exerciseName,
           overflow: TextOverflow.ellipsis,
           maxLines: 1,
         ),
+        actions: [
+          (FirebaseAuth.instance.currentUser!.uid == assignment.therapistId) ? TextButton(
+            onPressed: () => navigateAndUpdateAssignment(),
+            child: const Text("Edit", style: TextStyle(color: Colors.white),)
+          ) : Container()
+        ],
       ),
       body: ListView(
         children: <Widget>[
@@ -81,7 +107,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
                   const SizedBox(width: 8.0),
                   Expanded(
                     child: Text(
-                      widget.assignment.exerciseName,
+                      assignment.exerciseName,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18.0,
@@ -107,7 +133,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
             child: Column(
               children: <Widget>[
                 Text(
-                  widget.assignment.exerciseName,
+                  assignment.exerciseName,
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold
@@ -115,7 +141,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
                 ),
                 // Exercise Duration
                 Text(
-                  "Estimated Exercise Duration: ${widget.assignment.duration} min",
+                  "Estimated Exercise Duration: ${assignment.duration} min",
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.normal
@@ -130,13 +156,13 @@ class _AssignmentPageState extends State<AssignmentPage> {
                 const SizedBox(height: 8.0),
                 // Exercise Description
                 Text(
-                  widget.assignment.details,
+                  assignment.details,
                   style: const TextStyle(fontSize: 18)
                 ),
               ],
             ),
           ),
-          Container(
+          (FirebaseAuth.instance.currentUser?.uid == assignment.therapistId) ? Container(
             padding: const EdgeInsets.symmetric(horizontal: 50),
             child: TextButton(
               style: TextButton.styleFrom(
@@ -147,7 +173,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
               ),
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ViewFeedbackPage(patient: widget.patient, assignment: widget.assignment))
+                MaterialPageRoute(builder: (context) => ViewFeedbackPage(patient: widget.patient, assignment: assignment))
               ),
               child: const Text(
                 "View Feedback",
@@ -156,7 +182,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
                 ),
               )
             )
-          ),
+          ) : Container(),
         ],
       )
     );

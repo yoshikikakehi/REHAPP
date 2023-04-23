@@ -26,6 +26,13 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
   List<Assignment> assignments = [];
   List<Assignment> displayedAssignments = [];
 
+  void updateAssignment(Assignment oldAssignment, Assignment newAssignment) {
+    setState(() {
+      assignments[assignments.indexOf(oldAssignment)] = newAssignment;
+      displayedAssignments[displayedAssignments.indexOf(oldAssignment)] = newAssignment;
+    });
+  }
+
   @override
   void initState() {
     apiService
@@ -242,7 +249,14 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
                                           );
                                           return AlertDialog(
                                             title: const Text("Delete exercise?"),
-                                            content: const Text("Do you want to remove this exercise from this patient?"),
+                                            content: SizedBox(
+                                              height: 70,
+                                              child: Column(children: const <Widget>[
+                                                Text("Are you sure you want to unassign this exercise from this patient?"),
+                                                SizedBox(height: 10),
+                                                Text("(WARNING: This is irreversible)", textAlign: TextAlign.start, style: TextStyle(color: Colors.red),)
+                                              ]),
+                                            ),
                                             actions: [noButton, yesButton],
                                           );
                                         });
@@ -257,7 +271,8 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
                                         MaterialPageRoute(
                                           builder: (context) => AssignmentPage(
                                             patient: widget.patient,
-                                            assignment: assignments.elementAt(index),
+                                            assignment: displayedAssignments.elementAt(index),
+                                            updateAssignment: updateAssignment
                                           ),
                                         ),
                                       ),
@@ -285,7 +300,8 @@ class _AssignmentsListPageState extends State<AssignmentsListPage> {
                                       MaterialPageRoute(
                                         builder: (context) => AssignmentPage(
                                           patient: widget.patient,
-                                          assignment: assignments.elementAt(index),
+                                          assignment: displayedAssignments.elementAt(index),
+                                          updateAssignment: updateAssignment
                                         ),
                                       ),
                                     ),

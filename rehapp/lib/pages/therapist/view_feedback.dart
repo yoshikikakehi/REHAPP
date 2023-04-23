@@ -31,7 +31,7 @@ class _ViewFeedbackPageState extends State<ViewFeedbackPage> {
       .getFeedback(widget.assignment.id)
       .then((value) {
         setState(() {
-          feedback.addAll(value);
+          feedback.addAll(value.reversed);
           isApiCallProcess = false;
         });
       }).catchError((error) {
@@ -79,7 +79,7 @@ class _ViewFeedbackPageState extends State<ViewFeedbackPage> {
                 apiService.getFeedback(widget.assignment.id).then((value) {
                   setState(() {
                     feedback.clear();
-                    feedback.addAll(value);
+                    feedback.addAll(value.reversed);
                   });
                 }).catchError((error) {
                   const snackBar = SnackBar(
@@ -105,7 +105,7 @@ class _ViewFeedbackPageState extends State<ViewFeedbackPage> {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(20.0),
                     child: Padding(
-                      padding: const EdgeInsets.all(15.0),
+                      padding: (index == 0) ? const EdgeInsets.only(top: 20, left: 15.0, right: 15.0,) : const EdgeInsets.symmetric(horizontal: 15.0,),
                       child: Card(
                         key: Key(feedback.elementAt(index).id),
                         child: Container(
@@ -127,6 +127,7 @@ class _ViewFeedbackPageState extends State<ViewFeedbackPage> {
                                 child: Text(
                                   "Reported Duration: ${feedback.elementAt(index).duration.toString()} min\n"
                                   "Reported Difficulty: ${feedback.elementAt(index).difficulty.toString()}\n"
+                                  "Rating: ${feedback.elementAt(index).rating.toString()}\n"
                                   "Comments: ${feedback.elementAt(index).comments}",
                                   textAlign: TextAlign.left,
                                     style: const TextStyle(fontSize: 16),

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:rehapp/api/api_service.dart';
 import 'package:rehapp/model/users/therapist.dart';
 import 'package:rehapp/model/users/user.dart';
+import 'package:rehapp/pages/patient/calendar.dart';
 import 'package:rehapp/pages/patient/tab_navigator.dart';
 import 'package:rehapp/pages/shared/profile.dart';
+import 'package:rehapp/pages/therapist/statistics.dart';
 import 'package:rehapp/pages/therapist/tab_navigator.dart';
 
 class HomePage extends StatefulWidget {
@@ -17,7 +19,6 @@ class _HomePageState extends State<HomePage> {
   final navigatorKey = GlobalKey<NavigatorState>();
   APIService apiService = APIService();
   RehappUser? user;
-  Image? image;
   int selectedIndex = 0;
 
   @override
@@ -25,15 +26,7 @@ class _HomePageState extends State<HomePage> {
     apiService
       .getCurrentUser()
       .then((userValue) {
-        setState(() {
-          user = userValue;
-          image = Image.network(
-            user!.profileImage!,
-            width: 115,
-            height: 115,
-            fit: BoxFit.fill,
-          );
-        });
+        setState(() => user = userValue);
       });
     super.initState();
   }
@@ -49,13 +42,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> updateUser(newImage) async {
+  Future<void> updateUser() async {
     await apiService
       .getCurrentUser()
       .then((userValue) {
         setState(() {
           user = userValue;
-          if (newImage != null) image = newImage;
         });
       });
   }
@@ -83,10 +75,13 @@ class _HomePageState extends State<HomePage> {
           PatientTabNavigator(
             navigatorKey: navigatorKey
           )
+        ) : (selectedIndex == 1) ? (
+          CalendarPage(
+            user: user!,
+          )
         ) : (
           ProfilePage(
             user: user!,
-            image: image!,
             updateUser: updateUser
           )
         )
@@ -110,10 +105,11 @@ class _HomePageState extends State<HomePage> {
             user: user as Therapist,
             navigatorKey: navigatorKey,
           )
+        ) : (selectedIndex == 1) ? (
+          StatisticsPage(user: user! as Therapist)
         ) : (
           ProfilePage(
             user: user!,
-            image: image!,
             updateUser: updateUser
           )
         )

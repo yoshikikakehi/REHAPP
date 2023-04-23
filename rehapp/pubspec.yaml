@@ -48,6 +48,7 @@ dependencies:
   image_picker: ^0.8.7+3
   flutter_multi_formatter: ^2.10.2
   image_cropper: ^3.0.2
+  table_calendar: ^3.0.8
 
 dev_dependencies:
   flutter_test:

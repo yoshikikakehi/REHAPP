@@ -40,7 +40,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: selectedImage!.path,
         compressFormat: ImageCompressFormat.jpg,
-        compressQuality: 100,
+        compressQuality: 30,
         aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
         cropStyle: CropStyle.circle,
         uiSettings: [
@@ -236,10 +236,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 height: 115,
                                 fit: BoxFit.fill,
                               ),
-                            ) : (widget.user.profileImage != null) ? ClipRRect(
+                            ) : (widget.user.profileImage != null && widget.user.profileImage!.isNotEmpty) ? ClipRRect(
                               borderRadius: BorderRadius.circular(115),
-                              child: Image.file(
-                                File(widget.user.profileImage!),
+                              child: Image.network(
+                                widget.user.profileImage!,
                                 width: 115,
                                 height: 115,
                                 fit: BoxFit.fill,
@@ -264,7 +264,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 backgroundColor: Colors.white,
                                 child: IconButton(
                                   onPressed: () => _displayImageSelectDialog(context),
-                                  icon: (profileImage != null) ? const Icon(Icons.edit, size: 17.5,) : const Icon(Icons.add, size: 17.5,),
+                                  icon: (profileImage != null || widget.user.profileImage != null && widget.user.profileImage!.isNotEmpty) ? const Icon(Icons.edit, size: 17.5,) : const Icon(Icons.add, size: 17.5,),
                                   splashRadius: 17.5,
                                 )
                               )
@@ -441,12 +441,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           await apiService.updateUser(userRequest)
                             .then((_) {
                               setState(() => isApiCallProcess = true);
-                              Navigator.pop(context, Image.file(
-                                File(profileImage!.path),
-                                width: 115,
-                                height: 115,
-                                fit: BoxFit.fill,
-                              ));
+                              Navigator.pop(context);
                             });
                         }
                       },

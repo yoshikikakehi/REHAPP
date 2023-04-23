@@ -113,6 +113,8 @@ class APIService {
             lastName: data['lastName'],
             email: data['email'],
             role: data['role'],
+            phoneNumber: data['phoneNumber'],
+            profileImage: data['profileImage'],
             assignments: data["assignments"] != null ? (data["assignments"] as List).map((item) => item as String).toList() : const []
           );
         }
@@ -141,7 +143,9 @@ class APIService {
             lastName: data['lastName'],
             email: data['email'],
             role: data['role'],
-            assignments: data["assignments"] != null ? (data["assignments"] as List).map((item) => item as String).toList() : const []
+            phoneNumber: data['phoneNumber'],
+            profileImage: data['profileImage'],
+            assignments: data["assignments"] != null ? (data["assignments"] as List).map((item) => item as String).toList() : const [],
           ));
         })
         .onError((e, _) => throw Exception("User was not found: $e"));
@@ -176,18 +180,21 @@ class APIService {
           lastName: data['lastName'],
           email: data['email'],
           role: data['role'],
+          phoneNumber: data['phoneNumber'],
+          profileImage: data['profileImage'],
           assignments: data["assignments"] != null ? (data["assignments"] as List).map((item) => item as String).toList() : const []
         );
       });
       return patient;
   }
 
-  Future<void> deletePatient(
-      String patientId) async {
+  Future<void> removePatient(String patientId) async {
+    List<Assignment> assignments = await getAssignments(patientId);
+    if (assignments.isNotEmpty) throw Exception("Unassign all exercises before deleting this patient");
     await db.collection('users')
       .doc(auth.currentUser?.uid)
       .update({"patients": FieldValue.arrayRemove([patientId])})
-      .onError((e, _) => throw Exception("Patient could not be deleted: $e"));
+      .onError((e, _) => throw Exception("Deleting patient failed"));
   }
 
   Future<List<Assignment>> getAssignments(
@@ -195,6 +202,7 @@ class APIService {
     final List<Assignment> assignments = [];
     await db.collection("assignments")
       .where("patientId", isEqualTo: patientId)
+      .where("assigned", isEqualTo: true)
       .get()
       .then((QuerySnapshot query) {
         List<DocumentSnapshot> docs = query.docs;
@@ -248,6 +256,16 @@ class APIService {
       return assignment;
   }
 
+  Future<void> updateAssignment(
+      String assignmentId,
+      AssignmentRequest assignmentData
+    ) async {
+    await db.collection("assignments")
+      .doc(assignmentId)
+      .update(assignmentData.toJson())
+      .onError((error, stackTrace) => print(error));
+  }
+
   Future<void> deleteAssignment(
       String patientId,
       String assignmentId) async {
@@ -257,10 +275,10 @@ class APIService {
       .then((value) async {
         await db.collection('assignments')
           .doc(assignmentId)
-          .delete()
-          .onError((e, _) => throw Exception("Assignment could not be deleted: $e"));
+          .update({"assigned": false})
+          .onError((e, _) => throw Exception("Assignment could not be unassigned: $e"));
       })
-      .onError((e, _) => throw Exception("Assignment could not be deleted from patient's assignments: $e"));
+      .onError((e, _) => throw Exception("Assignment could not be removed from patient's assignments: $e"));
   }
 
   Future<Exercise> getExercise(
@@ -356,6 +374,7 @@ class APIService {
               date: data["date"],
               difficulty: data["difficulty"],
               duration: data["duration"],
+              rating: data["rating"],
               comments: data["comments"],
             )
           );
@@ -363,5 +382,82 @@ class APIService {
       })
       .onError((e, _) => throw Exception(e));
     return feedbackList;
+  }
+
+  Future<Map<String, dynamic>> getStatistics(String therapistId, List<String> patientIds) async {
+    Map<String, dynamic> statistics = {
+      "totalAssignments": 0
+    };
+
+    Map<String, List<Map>> exerciseToAssignments = {};
+    Map<String, String> exerciseIdToName = {};
+
+    await db.collection("assignments")
+      .where("therapistId", isEqualTo: therapistId)
+      .get()
+      .then((QuerySnapshot query) {
+        statistics["totalAssignments"] = query.docs.length;
+        for (DocumentSnapshot doc in query.docs) {
+          final data = doc.data() as Map;
+          final exerciseId = data["exerciseId"];
+          exerciseIdToName[exerciseId] = data["exerciseName"];
+
+          if (exerciseToAssignments[exerciseId] != null) {
+            exerciseToAssignments[exerciseId]!.add({
+              "id": doc.id,
+              "patientId": data["patientId"],
+            });
+          } else {
+            exerciseToAssignments[exerciseId] = [{
+              "id": doc.id,
+              "patientId": data["patientId"],
+            }];
+          }
+        }
+      })
+      .catchError((e) => print(e));
+    
+    for (String patientId in patientIds) {
+      statistics[patientId] = {};
+
+      for (String exerciseId in exerciseToAssignments.keys) {
+        statistics[patientId][exerciseId] = {};
+        statistics[patientId][exerciseId]["exerciseName"] = exerciseIdToName[exerciseId];
+        statistics[patientId][exerciseId]["timesCompleted"] = 0;
+        statistics[patientId][exerciseId]["averageDifficulty"] = -1;
+        statistics[patientId][exerciseId]["averageDuration"] = -1;
+        statistics[patientId][exerciseId]["averageRating"] = -1;
+        
+        List<Map>? patientAssignments = exerciseToAssignments[exerciseId]?.where((element) => element["patientId"] == patientId).toList();
+        if (patientAssignments == null) {
+          statistics[patientId][exerciseId]["timesAssigned"] = 0;
+        } else {
+          statistics[patientId][exerciseId]["timesAssigned"] = patientAssignments.length;
+          double difficulty = 0;
+          double duration = 0;
+          double rating = 0;
+          int completions = 0;
+          for (Map assignment in patientAssignments) {
+            await getFeedback(assignment["id"])
+              .then((feedback) {
+                completions += feedback.length;
+                for (PatientFeedback feedbackEntry in feedback) {
+                  difficulty += feedbackEntry.difficulty;
+                  duration += feedbackEntry.duration;
+                  rating += feedbackEntry.rating;
+                }
+              });
+          }
+          if (completions > 0) {
+            statistics[patientId][exerciseId]["timesCompleted"] = completions;
+            statistics[patientId][exerciseId]["averageDifficulty"] = difficulty / completions;
+            statistics[patientId][exerciseId]["averageDuration"] = duration / completions;
+            statistics[patientId][exerciseId]["averageRating"] = rating / completions;
+          }
+        }
+      }
+    }
+
+    return statistics;
   }
 }

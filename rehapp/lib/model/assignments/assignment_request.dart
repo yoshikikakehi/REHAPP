@@ -6,6 +6,9 @@ class AssignmentRequest {
   int duration;
   List<String> frequency;
   String details;
+  bool assigned;
+  int completions;
+  String lastCompletedDate;
 
   AssignmentRequest({
     this.patientId = "",
@@ -15,6 +18,9 @@ class AssignmentRequest {
     this.duration = 0,
     this.frequency = const [],
     this.details = "",
+    this.assigned = true,
+    this.completions = 0,
+    this.lastCompletedDate = "",
   });
 
   factory AssignmentRequest.fromJson(Map<String, dynamic> json) {
@@ -24,8 +30,11 @@ class AssignmentRequest {
       exerciseId: json["exerciseId"],
       exerciseName: json["exerciseName"],
       duration: json["duration"],
-      frequency: json["frequence"] != null ? (json["frequence"] as List).map((item) => item as String).toList() : const [],
+      frequency: json["frequency"] != null ? (json["frequency"] as List).map((item) => item as String).toList() : const [],
       details: json["details"],
+      assigned: json["assigned"],
+      completions: json["completions"],
+      lastCompletedDate: json["lastCompletedDate"],
     );
   }
 
@@ -38,6 +47,9 @@ class AssignmentRequest {
       "duration": duration,
       "frequency": frequency,
       "details": details,
+      "assigned": assigned,
+      "completions": completions,
+      "lastCompletedDate": lastCompletedDate,
     };
     return map;
   }

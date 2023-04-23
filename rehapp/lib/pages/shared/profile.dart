@@ -9,9 +9,8 @@ import 'package:rehapp/pages/shared/edit_profile.dart';
 
 class ProfilePage extends StatefulWidget {
   final RehappUser user;
-  final Image image;
-  final Future<void> Function(dynamic) updateUser;
-  const ProfilePage({Key? key, required this.user, required this.image, required this.updateUser}) : super(key: key);
+  final Future<void> Function() updateUser;
+  const ProfilePage({Key? key, required this.user, required this.updateUser}) : super(key: key);
   @override State<ProfilePage> createState() => _ProfilePageState();
 }
 
@@ -22,12 +21,12 @@ class _ProfilePageState extends State<ProfilePage> {
   final List<Therapist> therapists = [];
 
   Future<void> navigateAndUpdateProfile() async {
-    final newImage = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => EditProfilePage(user: widget.user)),
     );
     if (!mounted) return;
-    await widget.updateUser(newImage);
+    await widget.updateUser();
   }
 
   @override
@@ -70,7 +69,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       backgroundColor: const Color.fromARGB(188, 185, 185, 185),
                       child: (widget.user.profileImage != null && widget.user.profileImage!.isNotEmpty) ? ClipRRect(
                         borderRadius: BorderRadius.circular(115),
-                        child: widget.image,
+                        child: Image.network(
+                          widget.user.profileImage!,
+                          width: 115,
+                          height: 115,
+                          fit: BoxFit.fill,
+                        ),
                       ) : const CircleAvatar(
                         backgroundColor: Colors.white,
                         radius: 57.5,
