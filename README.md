@@ -14,7 +14,6 @@ REHAPP is a rehabilitation app for stroke survivors. This app allows therapists 
 ### Detailed Android Studio Installation and Set Up for Windows PC Users: 
 The link below contains screenshots and thorough instructions for Flutter and Project Installation via Android Studio for Windows PC Users.
 https://docs.google.com/document/d/1IuZj2MNcUqtaxMEQYJi0_f6q8ARFV24et6CWh60VYWM/edit?usp=sharing
-
 This guide is helpful for troubleshooting and includes common errors that can arise when installing Rehapp. We highly recommend reviewing this guide before proceeding.
 
 ### Project Installation

@@ -2,6 +2,10 @@
 
 A new Flutter project.
 
+To set up Flutter with Firebase, use the documentation: https://firebase.google.com/docs/flutter/setup?authuser=0&platform=web
+Make sure to download firebase cli, login to firebase and select a project
+Tip: when using flutterfire, it might not work sometimes with git bash so try using the command prompt and run as administrator
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.

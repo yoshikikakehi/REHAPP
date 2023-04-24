@@ -1,3 +1,4 @@
+//this model is used for adding a patient to the app
 class AddPatientResponseModel {
   final String status;
 

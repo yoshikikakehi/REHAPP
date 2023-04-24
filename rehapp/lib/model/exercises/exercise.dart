@@ -4,6 +4,8 @@ class Exercise {
   final String name;
   final String video;
 
+  // fields are different and does not have status field
+
   Exercise({
     this.id = "",
     this.description = "",
