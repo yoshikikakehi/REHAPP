@@ -14,7 +14,7 @@ REHAPP is a rehabilitation app for stroke survivors. This app allows therapists 
 ### Detailed Android Studio Installation and Set Up for Windows PC Users: 
 The link below contains screenshots and thorough instructions for Flutter and Project Installation via Android Studio for Windows PC Users.
 https://docs.google.com/document/d/1IuZj2MNcUqtaxMEQYJi0_f6q8ARFV24et6CWh60VYWM/edit?usp=sharing
-This guide is helpful for troubleshooting and includes common errors that can arise when installing Rehapp. We highly recommend reviewing this guide before proceeding.\
+This guide is helpful for troubleshooting and includes common errors that can arise when installing Rehapp. We highly recommend reviewing this guide before proceeding.
 
 ### Project Installation
 1. Clone this project and name it accordingly: ``git clone https://github.com/yoshikikakehi/REHAPP.git``. If you are new to git, it isn't 100% necessary to install git in order to utilize the project. Simply download the project and unzip it wherever you want on your computer. ![image](https://user-images.githubusercontent.com/29733080/165175625-ae7ab14d-02c4-4aca-ab1f-e2a7b0a09933.png)
