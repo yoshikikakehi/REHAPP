@@ -5,19 +5,43 @@ REHAPP is a rehabilitation app for stroke survivors. This app allows therapists 
 ## Installing
 
 ### Prerequisites
+1. Git (https://git-scm.com/downloads) 
+2. We recommend installing Android Studio (https://developer.android.com/studio/install). If you are on MacOS, you can also install Xcode.
+3. Project Installation: Install this REHAPP repository on your local machine.
+4. Flutter Installation: Install Flutter on your local machine. 
+5. If you are using Android Studio, you will need to install the Flutter Plug In and Dart Plug In via Android Studio. 
 
-1. The first step is to install Flutter on your local machine. Head on over to [Flutter's official website](https://docs.flutter.dev/get-started/install) and follow the instructions based on your operating system.
-2. If you are on a Windows PC, install Android Studio as instructed in the link above. If you are on MacOS, please install Xcode as instructed.
-3. The link above will also have instructions on how to set up the emulator. Please folow them. The emulator will simulate the mobile device in order to run the application.
+### Detailed Android Studio Installation and Set Up for Windows PC Users: 
+The link below contains screenshots and thorough instructions for Flutter and Project Installation via Android Studio for Windows PC Users.
+https://docs.google.com/document/d/1IuZj2MNcUqtaxMEQYJi0_f6q8ARFV24et6CWh60VYWM/edit?usp=sharing
+
+This guide is helpful for troubleshooting and includes common errors that can arise when installing Rehapp. We highly recommend reviewing this guide before proceeding.
 
 ### Project Installation
-
 1. Clone this project and name it accordingly: ``git clone https://github.com/yoshikikakehi/REHAPP.git``. If you are new to git, it isn't 100% necessary to install git in order to utilize the project. Simply download the project and unzip it wherever you want on your computer. ![image](https://user-images.githubusercontent.com/29733080/165175625-ae7ab14d-02c4-4aca-ab1f-e2a7b0a09933.png)
-2. Open the project with either Android Studio or Xcode, depending on which operating system you have. Windows users likely will open the project with Android Studio, and MacOS users will likely use Xcode.
-3. For Android Studio users, open the project. At the top there will be a bar. In the **target selector**, select an Android device for running the app. If none are listed as available, select Tools > AVD Manager and create one there. For details, see [Managing AVDs](https://developer.android.com/studio/run/managing-avds).
-Click the run icon in the toolbar, or invoke the menu item Run > Run. ![image](https://user-images.githubusercontent.com/29733080/165176384-eab8552c-4231-4486-ac08-1266469b6b0b.png) 
-4. For Xcode users, on your Mac, find the Simulator via Spotlight. You can also open "Terminal", a command line program, and enter this command: ``open -a Simulator``. With Terminal still open, you must navigate to the location of the project folder on your Mac. If you are unfamiliar with Terminal commands, see this [guide](https://computers.tutsplus.com/tutorials/navigating-the-terminal-a-gentle-introduction--mac-3855). The general gist is that entering the command ``ls`` shows you the current folders. ``cd <folder-name>`` allows you to enter a folder. ``cd ..`` allows you exit the folder you are currently in. You should aim to enter the folder "REHAPP" and again to enter the folder "rehapp". Make sure the Simulator is running, and enter ``flutter run`` in Terminal.
-5. Congratulations! The project should be running and you will be able to interact with the application.
+
+### Flutter Installation
+For general Flutter installation instructions, head on over to Flutter's official website (https://docs.flutter.dev/get-started/install) and follow the instructions based on your operating system. Below are the set of Flutter installation instructions that our team used.
+1. Clone the flutter repository using git clone https://github.com/flutter/flutter.git -b stable  
+2. Add the Path to the Flutter repository to the environment variables
+3. Run the command flutter doctor . This command will let you know if you are missing any requirements to run flutter and provide you the corresponding installation
+links as needed. If you are missing any of the requirements, please follow the given instructions. For assistance on resolving this issues, we recommend visiting pages 13-20 of the "Detailed Android Studio Installation and Set Up for Windows PC Users" above.
+   3a. Order to resolve the issues:
+                X Visual Studio 
+                X  Intellij Idea Community Version, Download Intellij Idea Community Version with the link provided
+                X VS Code, Download Intellij Idea VS Code with the link provided
+                X cmdline-tools component is missing - follow Resolve x Android SDK is missing command line tools below
+                X run flutter doctor -- android-license - follow Resolve Android License missing - Flutter Doctor
+
+### Android Studio Users: Flutter & Dart Plug In Installation
+1. Open Android Studio. 
+2. Click File -> Settings
+3. Click Plugins. 
+4. Type Flutter in the search bar. Select Install Flutter.
+5. Type Dart in the search bar. Select Install Dart.
+
+### Run Instructions for Android Studio
+1. Follow pages 23-25 of "Detailed Android Studio Installation and Set Up for Windows PC Users"  above.
 
 ### Building the Application for Mobile
 
@@ -48,7 +72,7 @@ These folders are generally unused by Team 2324.
 
 This folder is the most important, containing all the frontend code for the application. Let's break this down further in the next section.
 
-## Frontend Code
+## Frontend Code Explanation from previous year's team
 
 Inside lib are several folders that all contain the vast majority of frontend code for the project. The folders are ``api``, ``assets``, ``model``, and ``pages``. There are also two additional files: ``ProgressHUD.dart`` and ``main.dart`` that do not exist within any folders. Here is an idea of how the application runs in the first place:
 
@@ -63,7 +87,7 @@ Inside lib are several folders that all contain the vast majority of frontend co
 9. The ``api/chosen_exercise_bank.dart`` file is used when the therapist wants to use an exercise bank exercise from ``pages/exercise_bank_detail.dart``, two pages need to be popped off the Navigator stack, so the ``chosenExercise`` serves as a global variable to remember the details of the exercise for use later. Flutter uses a Navigator to travel between pages, keeping track of which pages are currently on the stack. You push onto the stack when you want to navigate to another page, and you pop when you want to return. In #1 of these details, we mentioned ``runApp(Phoenix(child: const MyApp()));``. The ``Phoenix`` that wraps around ``MyApp()`` is not standard: that is an outside dependency named ``flutter_phoenix`` which restarts the app, wiping clean all data and stacks. This is done on Logout.
 10. Lastly, dependencies can be viewed within ``rehapp/pubspec.yaml``.
 
-### Tips and Tricks
+### Tips and Tricks from previous year's team
 
 1. Whenever you install a new dependency by altering the ``rehapp/pubspec.yaml``, make sure to restart the app if it is running. If that does not work, running ``flutter clean`` and ``flutter run`` in that order should fix any issues.
 2. If you use Visual Studio Code, you can right-click on any widget within the build() function, and select refactor. This will show a list of options where you can wrap a widget in a parent or swap it for something else.
@@ -77,6 +101,32 @@ Inside lib are several folders that all contain the vast majority of frontend co
 * [Flutter Youtube Channel](https://www.youtube.com/c/flutterdev)
 
 # Release Notes
+
+## New software features (Version 0.4.0)
+
+### General Features
+* Return to login page using a back button
+* Upload a profile picture on the account page
+* Upload personal information (email, number, role, etc.) and display it on account page
+
+### Known Issues
+* We are currently facing an error when trying to load the exercise page for either the therapist or the patient user. This issue should be resolved by Sprint 5.
+
+## New software features (Version 0.3.0)
+
+### General Features
+* As a patient/therapist, I want to receive a confirmation email after account creation.
+* As a patient/therapist, I want to be able to reset my password.
+* As a therapist, I want a safety box to appear on the patient’s end that confirms that the patient is not at any safety risk and has the appropriate supervision required to complete the exercises.
+* As a therapist, I want my patient to be able to rate the completed exercise with a point system, so it is easier for me to review.
+
+### Bug Fixes
+* Migration from Azure to Firebase has been successfully completed. Exercises can be assigned as a therapist to a patient. All of this is done using Firebase. 
+
+### Known Issues
+* Main branch has errors rendering the login page that need to be resolved.
+* Issues with accessing fields such as images of exercises that no longer exist.
+
 ## New software features (Version 0.2.0)
 
 Note: The implementation of new features are repeated in the v0.1.0 release notes, as we are in the process of migrating from Azure to Firebase.
