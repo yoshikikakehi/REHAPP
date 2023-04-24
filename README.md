@@ -78,6 +78,17 @@ Inside lib are several folders that all contain the vast majority of frontend co
 
 # Release Notes
 
+## New software features (Version 0.5.0)
+
+###  Features
+* Statistics page
+* Calendar of assignments
+* Notifications for patient exercises
+* Filter patient exercises by frequency, details, etc.
+
+### Bug Fixes
+* Exercise page now loads and all past features from last year have been implemented and can be seen properly.
+
 ## New software features (Version 0.4.0)
 
 ### General Features
